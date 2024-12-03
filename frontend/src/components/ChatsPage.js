@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode'; // Импортируем jwtDecode как именованный импорт
 import './css-v2/ChatsPage.css'; // Импортируем CSS файл
 
 const Chats = () => {
@@ -8,11 +9,20 @@ const Chats = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [users, setUsers] = useState([]);
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
             const token = localStorage.getItem("token");
+            if (!token) {
+                console.error("Токен не найден, требуется авторизация!");
+                return;
+            }
+
             try {
+                const decodedToken = jwtDecode(token); // Используем правильный вызов функции
+                setCurrentUser(decodedToken);
+
                 const response = await fetch('http://localhost:5000/users', {
                     method: 'GET',
                     headers: {
@@ -20,7 +30,10 @@ const Chats = () => {
                     },
                 });
                 const usersData = await response.json();
-                setUsers(usersData);
+
+                // Исключаем текущего пользователя из списка
+                const filteredUsers = usersData.filter(user => user.id !== decodedToken.id);
+                setUsers(filteredUsers);
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
             }

@@ -179,7 +179,7 @@ const MyProfilePage = () => {
                         <h2>{user.username}</h2>
                         <p>Навыки: {user.skills || "Не указаны"}</p>
                         {/* Скрываем кнопку "Написать" для текущего пользователя */}
-                        {user.username !== currentUserUsername && (
+                        {user.username == currentUserUsername && (
                             <button onClick={() => navigate("/chats")}>Написать</button>
                         )}
                     </div>

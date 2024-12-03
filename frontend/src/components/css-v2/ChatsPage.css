@@ -19,12 +19,13 @@
 }
 
 .user-list li {
+    font-size: x-large;
     cursor: pointer;
     display: flex;
     align-items: center;
     padding: 10px;
     transition: 0.3s;
-    border-radius: 6px; /* Скругление углов */
+    border-radius: 6px;
 }
 
 .user-list li:hover {
@@ -34,7 +35,7 @@
 .user-list img {
     width: 40px;
     height: 40px;
-    border-radius: 50%; /* Круглые аватары */
+    border-radius: 20%; /* Круглые аватары */
     margin-right: 10px; /* Отступ справа */
 }
 
@@ -59,64 +60,93 @@
 }
 
 .chat-messages {
-    flex: 1;
-    padding: 15px;
-    border-top: 1px solid #ddd; /* Разделительная линия */
-    overflow-y: auto; /* Прокрутка при необходимости */
+    width: -webkit-fill-available;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto; /* Скроллинг по вертикали */
+    max-height: 70vh; /* Ограничение высоты */
+    padding: 10px;
+    background-color: #f5f5f5; /* Фон для области сообщений */
+    border-radius: 8px;
 }
 
 .message {
-    margin-bottom: 10px; /* Отступ для сообщений */
+    max-width: 80%; /* Сообщения занимают максимум 80% ширины контейнера */
+    word-wrap: break-word; /* Перенос слов */
+    word-break: break-word; /* Прерывание длинных слов */
     padding: 10px;
-    border-radius: 8px; /* Скругление углов для сообщений */
-    transition: background 0.3s;
-    max-width: 70%; /* Ограничение ширины сообщения */
+    border-radius: 5px;
+    background-color: #e0e0e0; /* Цвет фона для сообщений */
+    align-self: flex-start; /* Сообщения отправлены собеседником */
 }
 
 .message.mine {
-    background-color: #e7f3fe; /* Цвет сообщений пользователя */
-    align-self: flex-end; /* Выравнивание сообщений пользователя вправо */
-    color: #333; /* Цвет текста для сообщений пользователя */
+    align-self: flex-end; /* Сообщения отправлены текущим пользователем */
+    background-color: #cce5ff; /* Цвет фона для сообщений текущего пользователя */
 }
 
-.message:not(.mine) {
-    background-color: #d1f0d1; /* Цвет для входящих сообщений (собеседника) */
-    align-self: flex-start; /* Выравнивание сообщений собеседника влево */
-    color: #333; /* Цвет текста для сообщений собеседника */
+.chat-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
 }
 
 .chat-input-container {
-    display: flex;
-    padding: 10px;
     width: -webkit-fill-available;
-    position: sticky;
-    bottom: 0;
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background-color: #fff;
 }
 
 .chat-input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 10px; /* Отступ справа */
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 
 .chat-send {
-    background-color: #28a745; /* Зеленая кнопка */
-    color: white;
+    padding: 10px 20px;
     border: none;
-    padding: 10px;
-    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background-color 0.3s;
 }
 
 .chat-send:hover {
-    background-color: #218838; /* Темнее зеленый на наведение */
+    background-color: #0056b3;
 }
 
 footer {
     text-align: center;
     margin-top: 20px;
     font-size: 14px;
+}
+
+.notification-badge {
+    background-color: red;
+    color: white;
+    border-radius: 20%;
+    padding: 5px 10px;
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    font-weight: bold;
+    animation: shake 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(5px);
+    }
 }

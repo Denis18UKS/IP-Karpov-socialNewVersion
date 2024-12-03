@@ -9,6 +9,7 @@ const app = express();
 const githubRoutes = require('./routes/github');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs'); // Добавляем модуль для работы с файловой системой
 
 app.use('/uploads/avatars/', express.static(path.join(__dirname, 'uploads')));
 app.use('/github', githubRoutes);
@@ -60,7 +61,6 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ message: 'Неверный токен или токен истек' });
     }
 };
-
 
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -221,6 +221,7 @@ app.put('/profile/update', verifyToken, upload.single('avatar'), async (req, res
     }
 });
 
+// Удаление аватара пользователя
 app.delete('/profile/avatar', verifyToken, async (req, res) => {
     const { id } = req.user;
 
@@ -232,7 +233,7 @@ app.delete('/profile/avatar', verifyToken, async (req, res) => {
         }
 
         const avatarPath = user[0].avatar ? path.join(__dirname, user[0].avatar) : null;
-        
+
         if (avatarPath && fs.existsSync(avatarPath)) {
             // Удаляем файл аватара
             fs.unlinkSync(avatarPath);
@@ -251,20 +252,50 @@ app.delete('/profile/avatar', verifyToken, async (req, res) => {
 // Маршрут для получения профиля другого пользователя
 app.get('/users/:username', async (req, res) => {
     const { username } = req.params;
+    const decodedUsername = decodeURIComponent(username); // Декодируем имя пользователя
 
     try {
-        const [user] = await db.query('SELECT id, username, email, github_username, avatar, skills FROM users WHERE username = ?', [username]);
+        // Находим пользователя в базе данных
+        const [user] = await db.query(
+            'SELECT id, username, email, github_username, avatar, skills FROM users WHERE username = ?',
+            [decodedUsername]
+        );
 
         if (user.length === 0) {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
 
-        res.status(200).json(user[0]);
+        const profile = user[0];
+        let repositories = [];
+
+        // Загружаем репозитории с GitHub
+        if (profile.github_username) {
+            try {
+                const { data } = await axios.get(
+                    `https://api.github.com/users/${profile.github_username}/repos`,
+                    {
+                        headers: {
+                            Authorization: `token ${process.env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+                        },
+                    }
+                );
+
+                repositories = data.map(repo => ({
+                    name: repo.name,
+                    commits: repo.size, // Размер в GitHub API можно использовать как количество коммитов
+                }));
+            } catch (githubError) {
+                console.error('Ошибка при получении репозиториев GitHub:', githubError.message);
+            }
+        }
+
+        res.status(200).json({ user: profile, repositories });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Ошибка при получении профиля' });
     }
 });
+
 
 // Защищенный маршрут для получения списка пользователей
 app.get('/users', verifyToken, async (req, res) => {
@@ -276,7 +307,6 @@ app.get('/users', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера при получении пользователей' });
     }
 });
-
 
 // Старт сервера
 app.listen(5000, () => {

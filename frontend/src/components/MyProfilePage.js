@@ -127,6 +127,26 @@ const MyProfilePage = () => {
             });
     };
 
+    const handleDeleteAvatar = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("http://localhost:5000/profile/avatar", {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                setUser(prevState => ({ ...prevState, avatar: null }));
+            } else {
+                throw new Error("Ошибка при удалении аватара");
+            }
+        } catch (error) {
+            console.error("Ошибка при удалении аватара:", error);
+        }
+    };
+
     if (loading) {
         return <p>Загрузка...</p>;
     }
@@ -145,6 +165,11 @@ const MyProfilePage = () => {
                             alt={`${user.username}'s avatar`}
                         />
                         <button onClick={handleEditProfile}>Редактировать профиль</button>
+                        {user.avatar && (
+                            <button onClick={handleDeleteAvatar} className="delete-avatar-btn">
+                                Удалить аватар
+                            </button>
+                        )}
                     </div>
                     <div id="skills">
                         <h2>{user.username}</h2>

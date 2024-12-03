@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import './UsersPage.css'; // Импортируем новый CSS файл для страницы пользователей
+import { useNavigate } from 'react-router-dom';  // Импортируем useNavigate
+import { Link } from 'react-router-dom';
+import './UsersPage.css';
 
 const UsersPage = () => {
     const [users, setUsers] = useState([]);  // Состояние для хранения списка пользователей
     const [loading, setLoading] = useState(true);  // Для отслеживания состояния загрузки пользователей
+    const navigate = useNavigate();
 
     // Загружаем список пользователей с сервера
     useEffect(() => {
@@ -52,8 +55,9 @@ const UsersPage = () => {
 
     // Функция обработки клика на пользователя
     const openProfile = (username) => {
-        alert(`Открыт профиль пользователя: ${username}`);
+        navigate(`/users/${username}`);  // Используем navigate для перехода на страницу профиля
     };
+
 
     return (
         <div className="users">
@@ -63,14 +67,10 @@ const UsersPage = () => {
                     <p>Загрузка пользователей...</p>
                 ) : (
                     users.map((user, index) => (
-                        <a
-                            key={index}
-                            href="#"
-                            onClick={() => openProfile(user.username)} // Обработчик клика
-                        >
+                        <Link key={index} to={`/users/${user.username}`}>
                             <li>
                                 <img
-                                    src={user.avatar ? `http://localhost:5000${user.avatar}` : "./images/default-avatar.png"} // Проверка наличия аватара
+                                    src={user.avatar ? `http://localhost:5000${user.avatar}` : "./images/default-avatar.png"}
                                     alt={`${user.username} avatar`}
                                 />
                                 <div id="name-and-skills">
@@ -81,7 +81,7 @@ const UsersPage = () => {
                                     </h6>
                                 </div>
                             </li>
-                        </a>
+                        </Link>
                     ))
                 )}
             </ul>

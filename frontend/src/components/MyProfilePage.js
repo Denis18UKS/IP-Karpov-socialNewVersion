@@ -49,6 +49,7 @@ const MyProfilePage = () => {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("username");  // Удаляем username при выходе
         navigate("/login");
     };
 

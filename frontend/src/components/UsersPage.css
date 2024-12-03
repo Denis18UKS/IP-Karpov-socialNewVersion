@@ -1,0 +1,161 @@
+/* Стиль для страницы пользователей */
+.users-list-page {
+    padding: 2%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;  /* Уменьшаем промежуток между карточками */
+}
+
+.users-list-page li {
+        height: 100%;
+    padding: 15px;  /* Уменьшаем отступы внутри карточки */
+    width: 220px;  /* Увеличиваем ширину карточки для улучшения симметрии */
+    background-color: #ffffff;  /* Белый фон карточки */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);  /* Легкая тень */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: #333;  /* Темный текст для контраста */
+    text-align: center;  /* Центрируем текст внутри карточки */
+}
+
+.users-list-page li:hover {
+    transform: translateY(-5px);  /* Легкое поднятие карточки при наведении */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);  /* Увеличиваем тень при наведении */
+}
+
+.users-list-page a {
+    color: inherit; /* Убираем ссылочный цвет */
+    text-decoration: none; /* Убираем подчеркивание */
+}
+
+.users-list-page img {
+    width: 60px;  /* Увеличиваем размер аватара для лучшего восприятия */
+    height: 60px;
+    border-radius: 50%;  /* Круглая форма аватара */
+}
+
+#name-and-skills {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex-grow: 1;
+    text-align: left;
+}
+
+#name-and-skills p {
+    font-weight: bold;
+    font-size: 1.1rem;  /* Уменьшаем размер имени для гармонии */
+    color: #333;  /* Темный цвет для контраста */
+    margin: 0;  /* Убираем отступы */
+}
+
+#name-and-skills h6 {
+    font-style: italic;
+    font-size: 0.95rem;  /* Меньший размер для навыков */
+    color: #777;  /* Более мягкий цвет для навыков */
+    margin: 0;  /* Убираем отступы */
+}
+
+/* Добавим легкий фон при наведении на карточку */
+.users-list-page li:hover {
+    background-color: #f4f4f4;  /* Светлый фон на карточке при наведении */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);  /* Увеличиваем тень */
+}
+
+#profile-img {
+    padding: 3% 0%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 26%;
+    font-size: xx-large;
+}
+
+#profile-img img {
+    width: 200px;
+    border-radius: 10px;
+}
+
+#skills,
+#controlling-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#skills button,
+#controlling-profile button {
+    border: 1px solid rgba(0, 0, 0, 0);
+    padding: 0.4rem;
+}
+
+#repositories {
+    text-align: center;
+}
+
+#repositories h2 {
+    margin: 2%;
+}
+
+.scroll-table-body {
+    height: 300px;
+    overflow-x: auto;
+    margin-top: 0px;
+    margin-bottom: 20px;
+}
+
+.scroll-table table {
+    width: 100%;
+    table-layout: fixed;
+    border: none;
+}
+
+.scroll-table thead th {
+    font-weight: bold;
+    text-align: left;
+    border: none;
+    padding: 10px 15px;
+    background: lightgray;
+    font-size: 14px;
+}
+
+.scroll-table tbody td {
+    text-align: left;
+    padding: 10px 15px;
+    font-size: 14px;
+    vertical-align: top;
+    background: #e3e3e37e;
+}
+
+.scroll-table tbody tr:nth-child(even) {
+    background: #d7d7d7;
+}
+
+/* Стили для скролла */
+::-webkit-scrollbar {
+    display: none;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: black;
+}
+
+#profile-content {
+    margin: 0% 20%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    transition: background-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+}

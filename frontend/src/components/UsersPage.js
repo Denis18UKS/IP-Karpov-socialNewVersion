@@ -2,67 +2,63 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';  // Импортируем useNavigate
 import { Link } from 'react-router-dom';
 import './UsersPage.css';
+// Изменения в UsersPage.js
+import { jwtDecode as jwt_decode } from "jwt-decode";
+
+
 
 const UsersPage = () => {
-    const [users, setUsers] = useState([]);  // Состояние для хранения списка пользователей
-    const [loading, setLoading] = useState(true);  // Для отслеживания состояния загрузки пользователей
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    // Загружаем список пользователей с сервера
     useEffect(() => {
         const fetchUsers = async () => {
-            const token = localStorage.getItem('token'); // Получаем токен из localStorage
-
+            const token = localStorage.getItem("token");
             if (!token) {
                 console.error("Токен не найден, необходима авторизация");
-                return; // Если токен не найден, прекращаем выполнение
+                return;
             }
 
             try {
-                const response = await fetch('http://localhost:5000/users', {
-                    method: 'GET',
+                const response = await fetch("http://localhost:5000/users", {
+                    method: "GET",
                     headers: {
-                        'Authorization': `Bearer ${token}`, // Отправляем токен в заголовке
+                        Authorization: `Bearer ${token}`,
                     },
                 });
 
-                // Проверка ответа
                 if (!response.ok) {
                     const data = await response.json();
-                    console.error('Ошибка при получении пользователей:', data.message);
-                    setUsers([]); // Очистить список, если запрос не успешен
+                    console.error("Ошибка при получении пользователей:", data.message);
+                    setUsers([]);
                     setLoading(false);
                     return;
                 }
 
                 const data = await response.json();
-                if (Array.isArray(data)) {
-                    setUsers(data);  // Обновляем список пользователей
-                } else {
-                    console.error("Ожидался массив, но получен:", data);
-                    setUsers([]);  // В случае ошибки, очищаем список
-                }
-                setLoading(false); // Останавливаем индикатор загрузки
+                const decodedToken = jwt_decode(token); // Декодируем токен
+                const currentUserId = decodedToken.id; // Получаем ID текущего пользователя
+
+                setUsers(data.filter((user) => user.id !== currentUserId)); // Исключаем текущего пользователя
+                setLoading(false);
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
                 setLoading(false);
-                setUsers([]);  // Очищаем список в случае ошибки
+                setUsers([]);
             }
         };
 
         fetchUsers();
-    }, []);  // useEffect вызывается при монтировании компонента
+    }, []);
 
-    // Функция обработки клика на пользователя
     const openProfile = (username) => {
-        navigate(`/users/${username}`);  // Используем navigate для перехода на страницу профиля
+        navigate(`/users/${username}`);
     };
-
 
     return (
         <div className="users">
             <ul className="users-list-page">
-                {/* Загрузка пользователей */}
                 {loading ? (
                     <p>Загрузка пользователей...</p>
                 ) : (

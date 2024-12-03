@@ -155,6 +155,9 @@ const MyProfilePage = () => {
         return <p>Ошибка загрузки данных пользователя</p>;
     }
 
+    // Получаем имя текущего пользователя из локального хранилища
+    const currentUserUsername = localStorage.getItem("username");
+
     return (
         <div>
             <main id="profile-content">
@@ -174,7 +177,10 @@ const MyProfilePage = () => {
                     <div id="skills">
                         <h2>{user.username}</h2>
                         <p>Навыки: {user.skills || "Не указаны"}</p>
-                        <button onClick={() => navigate("/chats")}>Написать</button>
+                        {/* Скрываем кнопку "Написать" для текущего пользователя */}
+                        {user.username !== currentUserUsername && (
+                            <button onClick={() => navigate("/chats")}>Написать</button>
+                        )}
                     </div>
                 </section>
 

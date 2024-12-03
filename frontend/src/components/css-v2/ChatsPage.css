@@ -150,3 +150,8 @@ footer {
         transform: translateX(5px);
     }
 }
+
+.user-list li.active-chat {
+    background-color: #007bff; /* Цвет фона для активного чата */
+    color: white; /* Цвет текста для активного чата */
+}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { toast, ToastContainer } from 'react-toastify'; // Импорт toast и ToastContainer
-import 'react-toastify/dist/ReactToastify.css'; // Импорт стилей для Toastify
+import { toast, ToastContainer } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css'; 
 import './css-v2/ChatsPage.css';
 
 const Chats = () => {
@@ -55,11 +55,10 @@ const Chats = () => {
                 const messagesData = await response.json();
                 setMessages(messagesData);
 
-                // Обновление количества непрочитанных сообщений
                 if (id !== chatId) {
                     setUnreadMessagesCount((prevState) => ({
                         ...prevState,
-                        [id]: messagesData.filter(msg => !msg.read).length, // Для каждого чата сохраняем количество непрочитанных сообщений
+                        [id]: messagesData.filter(msg => !msg.read).length,
                     }));
                 }
             } catch (error) {
@@ -75,18 +74,16 @@ const Chats = () => {
 
     const selectChat = (user) => {
         if (selectedUser && selectedUser.id === user.id) {
-            // Если выбран тот же пользователь, не перезапрашиваем сообщения
             return;
         }
 
         setSelectedUser(user);
-        setMessages([]); // Очистка сообщений только при изменении чата
-        setUnreadMessagesCount((prevState) => ({ ...prevState, [user.id]: 0 })); // Обнуляем количество непрочитанных сообщений при открытии чата
+        setMessages([]); 
+        setUnreadMessagesCount((prevState) => ({ ...prevState, [user.id]: 0 }));
 
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const decodedToken = jwtDecode(token);
         const userId2 = user.id;
 
         fetch('http://localhost:5000/chats', {
@@ -105,7 +102,6 @@ const Chats = () => {
             })
             .catch(err => console.error("Ошибка при создании чата", err));
     };
-
 
     const sendMessage = async () => {
         if (newMessage.trim()) {
@@ -144,27 +140,20 @@ const Chats = () => {
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Отменяем стандартное поведение (перевод строки в input)
-            sendMessage(); // Отправляем сообщение
+            e.preventDefault();
+            sendMessage();
         }
     };
 
     // Функция для обработки аватара
     const getAvatarUrl = (avatar) => {
-        if (avatar) {
-            return `http://localhost:5000${avatar}`; // Абсолютный путь на сервер
-        } else {
-            return '/images/default-avatar.png'; // Путь к дефолтному изображению
-        }
+        return avatar ? `http://localhost:5000${avatar}` : '/images/default-avatar.png';
     };
 
-
-    // Обработка новых сообщений для всплывающих уведомлений
     useEffect(() => {
         if (messages.length > 0 && messages[messages.length - 1].user_id !== currentUser.id) {
             const lastMessage = messages[messages.length - 1];
 
-            // Показ уведомления только если чат не открыт и сообщение не прочитано
             if (chatId !== lastMessage.chat_id && !lastMessage.read) {
                 toast(`Новое сообщение от ${selectedUser?.username}`);
             }
@@ -173,13 +162,17 @@ const Chats = () => {
 
     return (
         <div className="chat-page">
-            <ToastContainer /> {/* Добавьте контейнер для уведомлений */}
+            <ToastContainer /> 
 
             <aside className="user-list">
                 <h3>Пользователи</h3>
                 <ul>
                     {users.map((user) => (
-                        <li key={user.id} onClick={() => selectChat(user)}>
+                        <li 
+                            key={user.id} 
+                            onClick={() => selectChat(user)} 
+                            className={selectedUser && selectedUser.id === user.id ? 'active-chat' : ''} // Добавляем класс активного чата
+                        >
                             <img src={getAvatarUrl(user.avatar)} alt={`${user.username} avatar`} />
                             <p>{user.username}</p>
                             {unreadMessagesCount[user.id] > 0 && (
@@ -189,7 +182,6 @@ const Chats = () => {
                             )}
                         </li>
                     ))}
-
                 </ul>
             </aside>
 

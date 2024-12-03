@@ -12,7 +12,7 @@ const MyProfilePage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState("");
     const navigate = useNavigate();
-handleDeleteAvatar
+
     useEffect(() => {
         const fetchUserData = async () => {
             const token = localStorage.getItem("token");

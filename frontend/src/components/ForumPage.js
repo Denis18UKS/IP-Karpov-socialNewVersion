@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './css-v2/ForumPage.css'; // Импортируем CSS файл
 
 const initialQuestions = [
     {

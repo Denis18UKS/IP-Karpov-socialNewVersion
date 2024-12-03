@@ -1,0 +1,117 @@
+.chat-page {
+    display: flex;
+    padding: 20px; /* Отступы вокруг страницы */
+    background-color: #f0f4f8; /* Мягкий фон для всей страницы */
+}
+
+.user-list {
+    width: 250px;
+    background-color: #ffffff; /* Белый фон для списка пользователей */
+    border-right: 1px solid #ccc; /* Разделительная линия */
+    padding: 20px; /* Отступы внутри */
+    border-radius: 10px 0 0 10px; /* Скругление углов */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Тень для улучшения визуализации */
+}
+
+.user-list ul {
+    padding: 0;
+    list-style: none; /* Убираем маркеры */
+}
+
+.user-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    transition: 0.3s;
+    border-radius: 6px; /* Скругление углов */
+}
+
+.user-list li:hover {
+    background-color: #e0e0e0; /* Цвет при наведении */
+}
+
+.user-list img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Круглые аватары */
+    margin-right: 10px; /* Отступ справа */
+}
+
+.chat-box {
+    flex: 1; /* Занимает оставшуюся ширину */
+    display: flex;
+    flex-direction: column;
+    padding: 20px; /* Отступы внутри */
+    background-color: #ffffff; /* Белый фон для чата */
+    border-radius: 0 10px 10px 0; /* Скругление углов */
+    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1); /* Тень для улучшения визуализации */
+}
+
+.chat-header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    width: -webkit-fill-available;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    border-top: 1px solid #ddd; /* Разделительная линия */
+    overflow-y: auto; /* Прокрутка при необходимости */
+}
+
+.message {
+    margin-bottom: 10px; /* Отступ для сообщений */
+    padding: 10px;
+    border-radius: 8px; /* Скругление углов для сообщений */
+    transition: background 0.3s;
+}
+
+.message.mine {
+    background-color: #e7f3fe; /* Цвет сообщений пользователя */
+    align-self: flex-end; /* Выравнивание сообщений пользователя вправо */
+}
+
+.message:not(.mine) {
+    background-color: #f1f0f0; /* Цвет для входящих сообщений */
+}
+
+.chat-input-container {
+    display: flex;
+    padding: 10px;
+    width: -webkit-fill-available;
+    position: sticky;
+    bottom: 0;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px; /* Отступ справа */
+}
+
+.chat-send {
+    background-color: #28a745; /* Зеленая кнопка */
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.chat-send:hover {
+    background-color: #218838; /* Темнее зеленый на наведение */
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}

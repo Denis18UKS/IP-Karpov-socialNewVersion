@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Для редиректа после авторизации
+import './css-v2/LoginPage.css'; // Импортируем CSS файл
 
 const LoginPage = ({ setIsAuthenticated }) => {
     const [email, setEmail] = useState('');

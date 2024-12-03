@@ -1,0 +1,140 @@
+/* Основной стиль хедера */
+header {
+    background: linear-gradient(90deg, #e3fdfd, #ffe6fa);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all 0.4s ease;
+}
+
+/* Легкая анимация градиента фона */
+header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.4));
+    animation: glowShift 6s infinite alternate;
+    z-index: -1;
+    border-radius: 10px;
+}
+
+/* Анимация перелива */
+@keyframes glowShift {
+    from {
+        transform: translateX(-10%);
+    }
+    to {
+        transform: translateX(10%);
+    }
+}
+
+h1 {
+    color: #ff6f91;
+    font-size: 32px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'Poppins', sans-serif;
+    text-shadow: 0 4px 8px rgba(255, 111, 145, 0.4);
+    transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+h1:hover {
+    transform: scale(1.1);
+    text-shadow: 0 8px 16px rgba(255, 111, 145, 0.6);
+}
+
+/* Навигация */
+nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+nav a {
+    color: #555;
+    font-size: 18px;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 8px 12px;
+    position: relative;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-family: 'Roboto', sans-serif;
+}
+
+nav a:hover {
+    background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(255, 154, 158, 0.5);
+}
+
+/* Анимация подчеркивания при наведении */
+nav a::after {
+    content: "";
+    position: absolute;
+    left: 10%;
+    bottom: -5px;
+    height: 3px;
+    width: 80%;
+    background: linear-gradient(90deg, #ff758c, #ff7eb3);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+nav a:hover::after {
+    transform: scaleX(1);
+}
+
+/* Кнопка выхода */
+.exit-btn {
+    background: linear-gradient(90deg, #ff758c, #ff7eb3);
+    color: #ffffff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(255, 117, 140, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.exit-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(255, 117, 140, 0.8);
+    background: linear-gradient(90deg, #fa709a, #fee140);
+}
+
+/* Адаптивный дизайн */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    nav a {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+
+    .exit-btn {
+        align-self: center;
+    }
+}

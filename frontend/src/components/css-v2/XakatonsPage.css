@@ -1,0 +1,33 @@
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px; /* Увеличенные отступы */
+    background: #e3fdfd; /* Светлый фон */
+    min-height: 100vh; /* Заполнение всей высоты */
+}
+
+/* Стиль для секции с хакатонами */
+.hero {
+    background: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
+    padding: 40px; /* Отступы внутри */
+    border-radius: 10px; /* Округленные углы */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.hero h2 {
+    font-size: 32px;
+    color: #ff6f91; /* Цвет заголовка */
+}
+
+.hero p {
+    font-size: 18px;
+    color: #555;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';  // Импортируем useNavigate
 import { Link } from 'react-router-dom';
-import './UsersPage.css';
+import './css-v2/UsersPage.css';
 // Изменения в UsersPage.js
 import { jwtDecode as jwt_decode } from "jwt-decode";
 

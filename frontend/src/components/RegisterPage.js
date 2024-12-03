@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';  // Импортируем useNavigate для редиректа
+import './css-v2/RegisterPage.css';
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');

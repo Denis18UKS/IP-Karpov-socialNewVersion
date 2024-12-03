@@ -1,60 +1,111 @@
-import React, { useState } from 'react';
-
-const users = [
-    { id: 1, name: 'Максим', avatar: './images/users-avatars/Maksim.jpg' },
-    { id: 2, name: 'Вика', avatar: './images/users-avatars/Vika.jpg' },
-    { id: 3, name: 'Никита', avatar: './images/users-avatars/Nikita.jpg' },
-    { id: 4, name: 'Алексей', avatar: './images/users-avatars/ALeksei.jpg' },
-];
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import './css-v2/ChatsPage.css'; // Импортируем CSS файл
 
 const Chats = () => {
+    const { chatId } = useParams();
     const [selectedUser, setSelectedUser] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const token = localStorage.getItem("token");
+            try {
+                const response = await fetch('http://localhost:5000/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                const usersData = await response.json();
+                setUsers(usersData);
+            } catch (error) {
+                console.error("Ошибка при загрузке пользователей:", error);
+            }
+        };
+
+        const fetchMessages = async (id) => {
+            const token = localStorage.getItem("token");
+            try {
+                const response = await fetch(`http://localhost:5000/messages/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                const messagesData = await response.json();
+                setMessages(messagesData);
+            } catch (error) {
+                console.error("Ошибка при загрузке сообщений:", error);
+            }
+        };
+
+        fetchUsers();
+        if (chatId) {
+            fetchMessages(chatId);
+        }
+    }, [chatId]);
 
     const selectChat = (user) => {
         setSelectedUser(user);
         setMessages([]); // Очистка сообщений при выборе нового чата
     };
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
         if (newMessage.trim()) {
-            setMessages((prevMessages) => [...prevMessages, { sender: 'Вы', text: newMessage }]);
-            setNewMessage('');
+            const token = localStorage.getItem("token");
+            try {
+                const response = await fetch(`http://localhost:5000/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ chatId, message: newMessage }),
+                });
+
+                if (response.ok) {
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        { sender: 'Вы', text: newMessage },
+                    ]);
+                    setNewMessage('');
+                } else {
+                    throw new Error('Ошибка при отправке сообщения');
+                }
+            } catch (error) {
+                console.error('Ошибка при отправке сообщения:', error);
+            }
         }
     };
 
     return (
         <div className="chat-page">
-            <main className="chat-main">
-                {/* Список пользователей */}
-                <aside className="user-list">
-                    <h3>Пользователи</h3>
-                    <ul>
-                        {users.map((user) => (
-                            <li key={user.id} onClick={() => selectChat(user)}>
-                                <img src={user.avatar} alt={`${user.name} avatar`} />
-                                <p>{user.name}</p>
-                            </li>
-                        ))}
-                    </ul>
-                </aside>
+            <aside className="user-list">
+                <h3>Пользователи</h3>
+                <ul>
+                    {users.map((user) => (
+                        <li key={user.id} onClick={() => selectChat(user)}>
+                            <img src={user.avatar} alt={`${user.username} avatar`} />
+                            <p>{user.username}</p>
+                        </li>
+                    ))}
+                </ul>
+            </aside>
 
-                {/* Окно чата */}
-                <section className="chat-box">
-                    <div className="chat-header">
-                        <h2>{selectedUser ? selectedUser.name : 'Выберите пользователя'}</h2>
-                    </div>
-                    <div className="chat-messages">
-                        {messages.map((message, index) => (
-                            <p key={index}>
-                                <strong>{message.sender}:</strong> {message.text}
-                            </p>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Поле ввода сообщения */}
+            <main className="chat-box">
+                <div className="chat-header">
+                    <h2>{selectedUser ? selectedUser.username : 'Выберите пользователя'}</h2>
+                </div>
+                <div className="chat-messages">
+                    {messages.map((message, index) => (
+                        <div key={index} className={message.sender === 'Вы' ? 'message mine' : 'message'}>
+                            <strong>{message.sender}:</strong> {message.text}
+                        </div>
+                    ))}
+                </div>
                 {selectedUser && (
                     <div className="chat-input-container">
                         <input
@@ -64,16 +115,10 @@ const Chats = () => {
                             placeholder="Введите сообщение..."
                             className="chat-input"
                         />
-                        <button className="chat-send btn" onClick={sendMessage}>
-                            Отправить
-                        </button>
+                        <button className="chat-send btn" onClick={sendMessage}>Отправить</button>
                     </div>
                 )}
             </main>
-
-            <footer>
-                <p>&copy; 2024 IT-BIRD. Все права защищены.</p>
-            </footer>
         </div>
     );
 };

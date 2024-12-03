@@ -1,9 +1,8 @@
 import React, { useContext } from "react";
-import { ThemeContext } from "../ThemeContext";  // Импортируем контекст
+import './css-v2/HomePage.css'; // Импортируем CSS файл
+
 
 const HomePage = () => {
-    const { theme, toggleTheme } = useContext(ThemeContext);  // Получаем тему и функцию переключения
-
     return (
         <div>
             <main>

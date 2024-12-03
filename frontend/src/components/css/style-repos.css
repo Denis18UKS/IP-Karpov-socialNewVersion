@@ -149,8 +149,11 @@
     top: 10px;
     right: 10px;
     transition: color 0.3s ease;
+    cursor: pointer;
 }
 
 .modal .close-button:hover {
+    cursor: pointer;
     color: #007bff;
+    transform: rotate(45deg);
 }

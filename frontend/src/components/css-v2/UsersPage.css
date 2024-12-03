@@ -1,0 +1,40 @@
+.users {
+    padding: 20px; /* Отступы вокруг страницы */
+}
+
+.users-list-page {
+    list-style-type: none; /* Убираем маркеры списка */
+    padding: 0;
+}
+
+.users-list-page li {
+    display: flex;
+    align-items: center;
+    background-color: #f9f9f9; /* Светлый фон для элементов списка */
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.users-list-page li:hover {
+    background-color: #e0e0e0; /* Цвет фона при наведении */
+}
+
+.users-list-page img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* Круглые аватары */
+    margin-right: 15px;
+}
+
+#name-and-skills h6 {
+    margin: 0;
+    color: #777; /* Цвет текста для навыков */
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+}

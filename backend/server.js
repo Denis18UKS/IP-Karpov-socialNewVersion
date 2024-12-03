@@ -358,12 +358,14 @@ app.get('/messages/:chatId', verifyToken, async (req, res) => {
             'SELECT m.*, u.username FROM messages m JOIN users u ON m.user_id = u.id WHERE m.chat_id = ? ORDER BY m.created_at',
             [chatId]
         );
+        console.log(messages); // Логирование сообщений
         res.json(messages);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Ошибка при получении сообщений' });
     }
 });
+
 
 
 app.post('/chats', verifyToken, async (req, res) => {

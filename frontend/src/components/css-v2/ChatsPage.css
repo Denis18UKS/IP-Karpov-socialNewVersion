@@ -19,6 +19,7 @@
 }
 
 .user-list li {
+    cursor: pointer;
     display: flex;
     align-items: center;
     padding: 10px;
@@ -48,7 +49,7 @@
 }
 
 .chat-header {
-    background-color: #007bff;
+    background-color: #007bff; /* Синий цвет для заголовка */
     color: white;
     padding: 15px;
     font-weight: bold;
@@ -69,15 +70,19 @@
     padding: 10px;
     border-radius: 8px; /* Скругление углов для сообщений */
     transition: background 0.3s;
+    max-width: 70%; /* Ограничение ширины сообщения */
 }
 
 .message.mine {
     background-color: #e7f3fe; /* Цвет сообщений пользователя */
     align-self: flex-end; /* Выравнивание сообщений пользователя вправо */
+    color: #333; /* Цвет текста для сообщений пользователя */
 }
 
 .message:not(.mine) {
-    background-color: #f1f0f0; /* Цвет для входящих сообщений */
+    background-color: #d1f0d1; /* Цвет для входящих сообщений (собеседника) */
+    align-self: flex-start; /* Выравнивание сообщений собеседника влево */
+    color: #333; /* Цвет текста для сообщений собеседника */
 }
 
 .chat-input-container {

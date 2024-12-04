@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';  // Импортируем useNavigate
+import { useNavigate } from 'react-router-dom';  
 import { Link } from 'react-router-dom';
 import './css-v2/UsersPage.css';
-// Изменения в UsersPage.js
 import { jwtDecode as jwt_decode } from "jwt-decode";
-
-
 
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
@@ -37,10 +34,10 @@ const UsersPage = () => {
                 }
 
                 const data = await response.json();
-                const decodedToken = jwt_decode(token); // Декодируем токен
-                const currentUserId = decodedToken.id; // Получаем ID текущего пользователя
+                const decodedToken = jwt_decode(token); 
+                const currentUserId = decodedToken.id; 
 
-                setUsers(data.filter((user) => user.id !== currentUserId)); // Исключаем текущего пользователя
+                setUsers(data.filter((user) => user.id !== currentUserId)); 
                 setLoading(false);
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
@@ -56,6 +53,29 @@ const UsersPage = () => {
         navigate(`/users/${username}`);
     };
 
+    const fetchRepositories = async (githubUsername) => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`http://localhost:5000/repositories/${githubUsername}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                console.error("Ошибка при получении репозиториев:", data.message);
+                return [];
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Ошибка при запросе репозиториев:", error);
+            return [];
+        }
+    };
+
     return (
         <div className="users">
             <ul className="users-list-page">
@@ -63,7 +83,7 @@ const UsersPage = () => {
                     <p>Загрузка пользователей...</p>
                 ) : (
                     users.map((user, index) => (
-                        <Link key={index} to={`/users/${user.username}`}>
+                        <Link key={index} to={`/users/${user.username}`} onClick={() => fetchRepositories(user.github_username)}>
                             <li>
                                 <img
                                     src={user.avatar ? `http://localhost:5000${user.avatar}` : "./images/default-avatar.png"}

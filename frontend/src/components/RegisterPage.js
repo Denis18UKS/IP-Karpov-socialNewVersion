@@ -16,6 +16,7 @@ const RegisterPage = () => {
         e.preventDefault();
         
         try {
+            // Регистрация пользователя
             const response = await fetch('http://localhost:5000/register', {
                 method: 'POST',
                 headers: {
@@ -37,12 +38,68 @@ const RegisterPage = () => {
                     setShowModal(false); // Закрываем модальное окно через 3 секунды
                     navigate('/login'); // Перенаправляем на страницу авторизации
                 }, 3000); // 3 секунды для показа модалки
+                
+                // Запрашиваем репозитории после регистрации
+                if (gitHubUsername) {
+                    await fetchAndSaveRepositories(gitHubUsername); // Функция для получения репозиториев
+                }
             } else {
                 setMessage(data.message); // Ошибка
             }
         } catch (err) {
             console.error(err);
             setMessage('Ошибка при отправке данных на сервер.');
+        }
+    };
+
+    // Функция для получения и сохранения репозиториев
+    const fetchAndSaveRepositories = async (githubUsername) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                console.error("Токен не найден, авторизация требуется.");
+                return;
+            }
+
+            // Запрос репозиториев по GitHub имени
+            const response = await fetch(`http://localhost:5000/repositories/${githubUsername}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                console.error("Ошибка при получении репозиториев:", data.message);
+                return;
+            }
+
+            const repositories = await response.json();
+            
+            // Сохраняем репозитории в базе данных
+            const saveResponse = await fetch('http://localhost:5000/repositories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    githubUsername,
+                    repositories,
+                }),
+            });
+
+            if (!saveResponse.ok) {
+                const data = await saveResponse.json();
+                console.error("Ошибка при сохранении репозиториев:", data.message);
+            } else {
+                console.log("Репозитории успешно сохранены.");
+            }
+
+        } catch (error) {
+            console.error("Ошибка при запросе или сохранении репозиториев:", error);
         }
     };
 

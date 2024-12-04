@@ -149,6 +149,28 @@ const UserProfilePage = () => {
             });
     };
 
+    // Закрыть модальное окно при клике вне его области
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            const modal = document.querySelector('.modal');
+            const modalContent = document.querySelector('.modal-content');
+            
+            if (modal && !modalContent.contains(event.target)) {
+                closeModal();
+            }
+        };
+
+        // Добавляем обработчик события
+        if (isModalOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        // Убираем обработчик при размонтировании компонента
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isModalOpen]);
+
     if (loading) {
         return <p>Загрузка...</p>;
     }

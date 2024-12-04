@@ -5,9 +5,10 @@
     align-items: center;
 }
 
-
 #profile-content {
     padding: 40px 20px; /* Увеличенные отступы */
+    text-align: center;
+
 }
 
 #profile-img {
@@ -21,7 +22,7 @@
 #profile-img img {
     width: 100px;
     height: 100px;
-    border-radius: 20%;;
+    border-radius: 20%;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -62,4 +63,34 @@ button:hover {
 footer {
     margin-top: 20px;
     text-align: center;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    #profile-img {
+        flex-direction: column;
+        gap: 20px;
+        
+    }
+
+    #profile-img img {
+        width: 80px;
+        height: 80px;
+    }
+
+    #profile-content {
+        padding: 20px; /* Уменьшаем отступы на мобильных */
+        text-align: center;
+        text-align: center;
+
+    }
+
+    .scroll-table {
+        max-width: 100%; /* Полная ширина таблицы */
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+    }
 }

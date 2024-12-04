@@ -3,9 +3,9 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px; /* Увеличенные отступы для большего пространства */
-    background: linear-gradient(90deg, #f8f9fa, #e3fdfd); /* Градиентный фон */
-    min-height: 100vh; /* Заполнение всей высоты */
+    padding: 40px 20px;
+    background: linear-gradient(90deg, #f8f9fa, #e3fdfd);
+    min-height: 100vh;
 }
 
 /* Форма для входа */
@@ -13,15 +13,15 @@ form {
     width: 100%;
     max-width: 400px;
     background: #fff;
-    padding: 30px; /* Увеличим внутренние отступы для лучшего восприятия */
-    border-radius: 10px; /* Более округлые углы */
+    padding: 30px;
+    border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s; /* Анимация при наведении */
+    transition: transform 0.3s;
 }
 
 /* Эффект при наведении на форму */
 form:hover {
-    transform: translateY(-3px); /* Небольшое поднятие во время наведения */
+    transform: translateY(-3px);
 }
 
 /* Стиль для полей ввода */
@@ -31,33 +31,33 @@ input {
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-family: 'Roboto', sans-serif; /* Подключаем шрифт из Header.css */
-    transition: border-color 0.3s; /* Плавный переход для цвета рамки */
+    font-family: 'Roboto', sans-serif;
+    transition: border-color 0.3s;
 }
 
 /* Эффект для полей ввода при фокусе */
 input:focus {
-    border-color: #ff758c; /* Цвет рамки при фокусе */
-    outline: none; /* Убираем стандартный обвод */
+    border-color: #ff758c;
+    outline: none;
 }
 
 /* Стиль для кнопок */
 button {
-    background-color: #28a745; /* Зеленый цвет для кнопок */
+    background-color: #28a745;
     color: white;
     border: none;
-    padding: 12px; /* Увеличенные отступы */
+    padding: 12px;
     font-size: 16px;
     font-weight: 600;
-    border-radius: 8px; /* Округленные углы */
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.3s, transform 0.2s; /* Эффекты плавного перехода */
+    transition: background 0.3s, transform 0.2s;
 }
 
 /* Эффект при наведении на кнопку */
 button:hover {
-    background-color: #218838; /* Темнее зеленый на наведение */
-    transform: translateY(-2px); /* Поднимаем кнопку при наведении */
+    background-color: #218838;
+    transform: translateY(-2px);
 }
 
 /* Сообщение об ошибке */
@@ -65,20 +65,24 @@ button:hover {
     color: red;
     text-align: center;
     margin-top: 10px;
-    font-weight: bold; /* Выделяем текст ошибки */
+    font-weight: bold;
 }
 
 /* Адаптивные стили */
 @media (max-width: 768px) {
     main {
-        padding: 20px; /* Уменьшаем отступы на мобильных */
+        padding: 20px;
     }
 
     form {
-        padding: 20px; /* Уменьшаем внутренние отступы формы */
+        padding: 20px;
     }
 
     button {
-        padding: 10px; /* Уменьшаем отступы на кнопках */
+        padding: 10px;
+    }
+
+    .error-message {
+        font-size: 14px;
     }
 }

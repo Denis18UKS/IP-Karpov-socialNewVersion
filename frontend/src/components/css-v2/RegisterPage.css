@@ -1,11 +1,11 @@
 /* Основной стиль для страницы регистрации */
 main {
-    padding: 40px 20px; /* Увеличим отступы */
+    padding: 40px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: linear-gradient(90deg, #e3fdfd, #ffe6fa); /* Добавим градиентный фон */
-    min-height: 100vh; /* Заполним всю высоту страницы */
+    background: linear-gradient(90deg, #e3fdfd, #ffe6fa);
+    min-height: 100vh;
 }
 
 /* Форма регистрации */
@@ -14,9 +14,9 @@ form {
     max-width: 400px;
     background: #fff;
     padding: 30px;
-    border-radius: 10px; /* Уголки становятся более округлыми */
+    border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease; /* Сделаем небольшую анимацию при наведении */
+    transition: transform 0.3s ease;
 }
 
 /* Эффект при наведении на форму */
@@ -31,36 +31,37 @@ input {
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-family: 'Roboto', sans-serif; /* Подключим шрифт из Header.css */
-    transition: border-color 0.3s ease; /* Для плавного эффекта в цветах */
+    font-family: 'Roboto', sans-serif;
+    transition: border-color 0.3s ease;
 }
 
 /* Эффект для полей ввода при фокусе */
 input:focus {
-    border-color: #ff758c; /* Цвет для рамки при фокусе */
-    outline: none; /* Убираем стандартный обвод */
+    border-color: #ff758c;
+    outline: none;
 }
 
 /* Стиль для кнопок */
 button {
-    background-color: #28a745; /* Зеленый цвет для кнопок */
+    background-color: #28a745;
     color: white;
     border: none;
     padding: 12px;
-    border-radius: 8px; /* Округленные углы */
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    transition: background 0.3s, transform 0.2s; /* Эффекты плавного перехода */
+    transition: background 0.3s, transform 0.2s;
 }
 
 /* Эффект при наведении на кнопку */
 button:hover {
-    background-color: #218838; /* Темнее зеленый на наведение */
-    transform: translateY(-2px); /* Поднимаем кнопку */
+    background-color: #218838;
+    transform: translateY(-2px);
 }
 
+/* Модальное окно */
 /* Модальное окно */
 .modal {
     position: fixed;
@@ -72,20 +73,35 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+    /* Отключаем прокрутку на фоне */
 }
 
 /* Стиль для содержимого модального окна */
 .modal-content {
     background: #fff;
-    padding: 30px; /* Изменим отступы для большей площади */
+    padding: 30px;
     border-radius: 10px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    animation: scaleUp 0.3s ease-in-out; /* Включим анимацию */
+    animation: scaleUp 0.3s ease-in-out;
+    max-width: 600px;
+    /* Ограничиваем максимальную ширину */
+    width: 100%;
+    /* Ширина 100%, чтобы окно не выходило за пределы экрана */
+    margin: 50px auto;
+    /* Центрируем окно по горизонтали */
+    max-height: 80vh;
+    /* Ограничиваем максимальную высоту, 80% от высоты экрана */
+    overflow-y: auto;
+    /* Добавляем вертикальную прокрутку при необходимости */
+    margin-top: 120px; /* Отступ сверху для предотвращения перекрытия хедером */
 }
 
 /* Заголовок в модальном окне */
 .modal-content h2 {
     margin-top: 0;
+    font-size: 24px;
+    color: #333;
 }
 
 /* Анимация для модального окна */
@@ -93,6 +109,7 @@ button:hover {
     from {
         transform: scale(0.8);
     }
+
     to {
         transform: scale(1);
     }
@@ -100,15 +117,51 @@ button:hover {
 
 /* Адаптивные стили */
 @media (max-width: 768px) {
-    main {
-        padding: 20px; /* Уменьшаем отступы на мобильных */
+
+    /* Модальное окно */
+    .modal-content {
+        padding: 20px;
+        /* Уменьшаем отступы внутри окна */
+        max-width: 90%;
+        /* Уменьшаем максимальную ширину окна */
+        margin: 20px auto;
+        /* Уменьшаем отступы сверху и снизу на мобильных */
+        max-height: 80vh;
+        /* Ограничиваем максимальную высоту */
+        margin-top: 100px; /* Уменьшаем отступ сверху на мобильных */
     }
 
+    /* Заголовок */
+    .modal-content h2 {
+        font-size: 20px;
+    }
+}
+
+/* Стили для еще меньших экранов (например, телефоны) */
+@media (max-width: 480px) {
+
+    /* Модальное окно */
+    .modal-content {
+        padding: 15px;
+        max-width: 95%;
+        margin: 15px auto;
+        max-height: 80vh;
+        margin-top: 90px; /* Еще меньше отступ сверху на очень маленьких экранах */
+    }
+
+    /* Заголовок */
+    .modal-content h2 {
+        font-size: 18px;
+    }
+
+    /* Формы в модальном окне */
     form {
-        padding: 20px; /* Уменьшаем отступы внутри формы */
+        padding: 10px;
     }
 
+    /* Кнопки в модальном окне */
     button {
-        padding: 10px; /* Уменьшаем отступы на кнопках */
+        padding: 10px 15px;
+        font-size: 14px;
     }
 }

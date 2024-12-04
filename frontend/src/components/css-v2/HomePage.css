@@ -1,17 +1,17 @@
 /* Основной стиль для главной страницы */
 main {
-    padding: 40px 20px; /* Увеличенные отступы */
+    padding: 40px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: linear-gradient(90deg, #e3fdfd, #ffe6fa); /* Градиентный фон */
-    min-height: 100vh; /* Заполнение всей высоты */
+    background: linear-gradient(90deg, #e3fdfd, #ffe6fa);
+    min-height: 100vh;
 }
 
 /* Стиль для секции приветствия */
 .hero {
     text-align: center;
-    background: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
+    background: rgba(255, 255, 255, 0.9);
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -19,22 +19,55 @@ main {
 
 .hero h2 {
     font-size: 32px;
-    color: #ff6f91; /* Цвет заголовка */
+    color: #ff6f91;
     margin-bottom: 10px;
     transition: transform 0.3s;
 }
 
 .hero h2:hover {
-    transform: scale(1.05); /* Эффект на наведение */
+    transform: scale(1.05);
 }
 
 .hero p {
     font-size: 18px;
-    color: #555; /* Более темный цвет для текста */
+    color: #555;
 }
 
 footer {
     margin-top: 20px;
     text-align: center;
     font-size: 14px;
+}
+
+/* Адаптивные стили */
+@media (max-width: 1024px) {
+    .hero {
+        padding: 30px;
+    }
+
+    .hero h2 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 20px;
+    }
+
+    .hero h2 {
+        font-size: 24px;
+    }
+
+    .hero p {
+        font-size: 14px;
+    }
+
+    footer {
+        font-size: 12px;
+    }
 }

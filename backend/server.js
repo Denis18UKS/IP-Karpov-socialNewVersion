@@ -511,7 +511,7 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
 app.get('/forums', async (req, res) => {
     try {
         const [questions] = await db.query(`
-            SELECT f.id, f.question, f.description, f.created_at, f.status, u.username AS user
+            SELECT f.id, f.question AS title, f.description, f.created_at, f.status, u.username AS user
             FROM forums f
             JOIN users u ON f.user_id = u.id
             ORDER BY f.created_at DESC

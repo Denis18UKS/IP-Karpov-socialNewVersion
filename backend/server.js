@@ -396,6 +396,64 @@ app.post('/chats', verifyToken, async (req, res) => {
     }
 });
 
+// Эндпоинт для получения репозиториев
+// Эндпоинт для получения репозиториев
+app.get('/repositories/:github_username', verifyToken, async (req, res) => {
+    const { github_username } = req.params;
+
+    try {
+        // Сначала проверим, есть ли уже данные о репозиториях для этого пользователя в базе данных
+        const [existingRepos] = await db.query(
+            'SELECT * FROM repositories WHERE user_id = (SELECT id FROM users WHERE github_username = ?) ORDER BY last_synced DESC LIMIT 1',
+            [github_username]
+        );
+
+        // Если данные о репозиториях существуют и они были синхронизированы недавно (например, в последние 24 часа)
+        if (existingRepos.length > 0) {
+            const lastSynced = new Date(existingRepos[0].last_synced);
+            const hoursSinceLastSync = (new Date() - lastSynced) / (1000 * 60 * 60);
+
+            if (hoursSinceLastSync < 24) {
+                // Если данные актуальны (менее 24 часов с последнего запроса), возвращаем их
+                return res.json(existingRepos.map(repo => ({
+                    repo_name: repo.repo_name,
+                    repo_url: repo.repo_url,
+                    last_synced: repo.last_synced
+                })));
+            }
+        }
+
+        // Если данных нет или они устарели, делаем запрос к GitHub API
+        const { data } = await axios.get(`https://api.github.com/users/${github_username}/repos`);
+
+        // Извлекаем данные из GitHub
+        const repoData = data.map(repo => ({
+            repo_name: repo.name,
+            repo_url: repo.html_url,
+            last_synced: new Date()
+        }));
+
+        // Удаляем старые записи
+        await db.query('DELETE FROM repositories WHERE user_id = (SELECT id FROM users WHERE github_username = ?)', [github_username]);
+
+        // Сохраняем новые репозитории в базу данных
+        for (const repo of repoData) {
+            await db.query(
+                'INSERT INTO repositories (user_id, repo_name, repo_url, last_synced) VALUES ((SELECT id FROM users WHERE github_username = ?), ?, ?, ?)',
+                [github_username, repo.repo_name, repo.repo_url, repo.last_synced]
+            );
+        }
+
+        // Возвращаем данные
+        res.status(200).json(repoData);
+
+    } catch (error) {
+        console.error('Ошибка при получении репозиториев:', error);
+        res.status(500).json({ message: 'Ошибка при получении репозиториев' });
+    }
+});
+
+
 // Старт сервера
 app.listen(5000, () => {
     console.log('Server is running on port 5000');

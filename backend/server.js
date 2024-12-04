@@ -506,7 +506,7 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Ошибка при получении репозиториев' });
     }
 });
-
+// Эндпоинт для получения вопросов форума
 // Эндпоинт для получения вопросов форума
 app.get('/forums', async (req, res) => {
     try {
@@ -522,6 +522,65 @@ app.get('/forums', async (req, res) => {
         res.status(500).json({ message: 'Ошибка при получении вопросов' });
     }
 });
+
+// Добавление нового вопроса
+app.post('/forums', async (req, res) => {
+    const { title, description, user_id } = req.body;
+    const createdAt = new Date();
+
+    // Проверка обязательных полей
+    if (!title || !description) {
+        return res.status(400).json({ message: 'Тема и описание обязательны' });
+    }
+
+    try {
+        // Вставка нового вопроса в базу данных
+        const [result] = await db.query(
+            'INSERT INTO forums (user_id, question, description, created_at, status) VALUES (?, ?, ?, ?, ?)',
+            [user_id, title, description, createdAt, 'Открыт'] // Статус "Открыт" по умолчанию
+        );
+
+        const newQuestion = {
+            id: result.insertId,
+            user_id,
+            question: title,
+            description,
+            created_at: createdAt.toISOString(),
+            status: 'Открыт',
+        };
+
+        // Ответ с новым вопросом
+        res.status(201).json(newQuestion);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Ошибка при добавлении вопроса' });
+    }
+});
+
+// Обновление статуса вопроса
+app.put('/forums/:id/status', verifyToken, async (req, res) => {
+    const { id } = req.params; // ID вопроса
+    const { status } = req.body; // Новый статус
+
+    if (!status) {
+        return res.status(400).json({ message: 'Статус обязателен' });
+    }
+
+    try {
+        // Обновляем статус вопроса
+        const [result] = await db.query('UPDATE forums SET status = ? WHERE id = ?', [status, id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Вопрос не найден' });
+        }
+
+        res.status(200).json({ message: 'Статус обновлен' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Ошибка при обновлении статуса вопроса' });
+    }
+});
+
 
 
 

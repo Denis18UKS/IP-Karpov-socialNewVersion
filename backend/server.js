@@ -510,18 +510,19 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
 // Эндпоинт для получения вопросов форума
 app.get('/forums', async (req, res) => {
     try {
-        const [questions] = await db.query(`
-            SELECT f.id, f.question AS title, f.description, f.created_at, f.status, u.username AS user
+        const [forums] = await db.query(`
+            SELECT f.id, f.question, f.description, f.created_at, f.status, u.username AS user
             FROM forums f
             JOIN users u ON f.user_id = u.id
             ORDER BY f.created_at DESC
         `);
-        res.status(200).json(questions);
-    } catch (err) {
-        console.error('Ошибка при получении вопросов:', err);
+        res.status(200).json(forums);
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Ошибка при получении вопросов' });
     }
 });
+
 
 
 // Старт сервера

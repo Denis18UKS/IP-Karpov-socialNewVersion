@@ -582,6 +582,43 @@ app.put('/forums/:id/status', verifyToken, async (req, res) => {
 });
 
 
+app.get('/forums/:id/answers', async (req, res) => {
+    const { id } = req.params; // ID вопроса
+    try {
+        const [answers] = await db.query(`
+            SELECT a.id, a.answer, a.created_at, u.username AS user
+            FROM forum_answers a
+            JOIN users u ON a.user_id = u.id
+            WHERE a.forum_id = ?
+            ORDER BY a.created_at ASC
+        `, [id]);
+        res.status(200).json(answers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Ошибка при получении ответов' });
+    }
+});
+
+app.post('/forums/:id/answers', verifyToken, async (req, res) => {
+    const { id } = req.params; // ID вопроса
+    const { answer } = req.body; // Текст ответа
+    const userId = req.user.id; // ID текущего пользователя из токена
+
+    if (!answer) {
+        return res.status(400).json({ message: 'Ответ обязателен' });
+    }
+
+    try {
+        await db.query(`
+            INSERT INTO forum_answers (forum_id, user_id, answer, created_at)
+            VALUES (?, ?, ?, NOW())
+        `, [id, userId, answer]);
+        res.status(201).json({ message: 'Ответ добавлен' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Ошибка при добавлении ответа' });
+    }
+});
 
 
 // Старт сервера

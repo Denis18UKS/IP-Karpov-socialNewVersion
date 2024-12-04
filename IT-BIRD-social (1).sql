@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Дек 04 2024 г., 02:59
+-- Время создания: Дек 04 2024 г., 20:16
 -- Версия сервера: 8.0.30
 -- Версия PHP: 8.1.9
 
@@ -32,7 +32,7 @@ CREATE TABLE `admin_logs` (
   `admin_id` int NOT NULL,
   `action` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -45,7 +45,7 @@ CREATE TABLE `chats` (
   `user_id_1` int NOT NULL,
   `user_id_2` int NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Дамп данных таблицы `chats`
@@ -68,8 +68,19 @@ CREATE TABLE `forums` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
   `question` text NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `description` text,
+  `status` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `forums`
+--
+
+INSERT INTO `forums` (`id`, `user_id`, `question`, `created_at`, `description`, `status`) VALUES
+(1, 1, 'test', '2024-12-04 10:28:37', 'test', 'Открыт'),
+(2, 1, 'twwd', '2024-12-04 11:16:15', 'wdwdwd\n', 'Открыт'),
+(3, 1, 'wdw', '2024-12-04 11:16:22', 'wdwd', 'Открыт');
 
 -- --------------------------------------------------------
 
@@ -83,7 +94,7 @@ CREATE TABLE `forum_answers` (
   `user_id` int NOT NULL,
   `answer` text NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -104,7 +115,7 @@ CREATE TABLE `hackathons` (
   `participants_limit` int DEFAULT NULL,
   `tags` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -118,7 +129,7 @@ CREATE TABLE `messages` (
   `user_id` int NOT NULL,
   `message` text NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Дамп данных таблицы `messages`
@@ -165,7 +176,65 @@ CREATE TABLE `repositories` (
   `repo_name` varchar(100) NOT NULL,
   `repo_url` varchar(255) NOT NULL,
   `last_synced` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `repositories`
+--
+
+INSERT INTO `repositories` (`id`, `user_id`, `repo_name`, `repo_url`, `last_synced`) VALUES
+(1, 5, 'fixdiscord', 'https://github.com/AikenOZ/fixdiscord', '2024-12-04 04:44:21'),
+(2, 5, 'hakaton_turbo', 'https://github.com/AikenOZ/hakaton_turbo', '2024-12-04 04:44:21'),
+(3, 5, 'OZlamclnr', 'https://github.com/AikenOZ/OZlamclnr', '2024-12-04 04:44:21'),
+(4, 3, 'API', 'https://github.com/Natalua9/API', '2024-12-04 09:46:32'),
+(5, 3, 'BarShik', 'https://github.com/Natalua9/BarShik', '2024-12-04 09:46:32'),
+(6, 3, 'DanseStydio', 'https://github.com/Natalua9/DanseStydio', '2024-12-04 09:46:32'),
+(7, 3, 'kyrsovay', 'https://github.com/Natalua9/kyrsovay', '2024-12-04 09:46:32'),
+(8, 3, 'laravelDemo', 'https://github.com/Natalua9/laravelDemo', '2024-12-04 09:46:32'),
+(9, 3, 'Pinguins1', 'https://github.com/Natalua9/Pinguins1', '2024-12-04 09:46:32'),
+(10, 3, 'proect_manager', 'https://github.com/Natalua9/proect_manager', '2024-12-04 09:46:32'),
+(11, 3, 'test21', 'https://github.com/Natalua9/test21', '2024-12-04 09:46:32'),
+(12, 3, 'todolist', 'https://github.com/Natalua9/todolist', '2024-12-04 09:46:32'),
+(13, 2, '-', 'https://github.com/Denis18UKS/-', '2024-12-04 09:46:42'),
+(14, 2, 'BarShik', 'https://github.com/Denis18UKS/BarShik', '2024-12-04 09:46:42'),
+(15, 2, 'breadMaket', 'https://github.com/Denis18UKS/breadMaket', '2024-12-04 09:46:42'),
+(16, 2, 'Concurs', 'https://github.com/Denis18UKS/Concurs', '2024-12-04 09:46:42'),
+(17, 2, 'CurseForgeMyInstances', 'https://github.com/Denis18UKS/CurseForgeMyInstances', '2024-12-04 09:46:42'),
+(18, 2, 'GITKonkurs2V-Penza-', 'https://github.com/Denis18UKS/GITKonkurs2V-Penza-', '2024-12-04 09:46:42'),
+(19, 2, 'IP-Karpov-social', 'https://github.com/Denis18UKS/IP-Karpov-social', '2024-12-04 09:46:42'),
+(20, 2, 'IP-Karpov-socialNewVersion', 'https://github.com/Denis18UKS/IP-Karpov-socialNewVersion', '2024-12-04 09:46:42'),
+(21, 2, 'IT-BIRD-social', 'https://github.com/Denis18UKS/IT-BIRD-social', '2024-12-04 09:46:42'),
+(22, 2, 'karpov-diplom-project', 'https://github.com/Denis18UKS/karpov-diplom-project', '2024-12-04 09:46:42'),
+(23, 2, 'Karpov-Laravel-test', 'https://github.com/Denis18UKS/Karpov-Laravel-test', '2024-12-04 09:46:42'),
+(24, 2, 'Kulinar', 'https://github.com/Denis18UKS/Kulinar', '2024-12-04 09:46:42'),
+(25, 2, 'kursach', 'https://github.com/Denis18UKS/kursach', '2024-12-04 09:46:42'),
+(26, 2, 'LaratestKarpovKarpov', 'https://github.com/Denis18UKS/LaratestKarpovKarpov', '2024-12-04 09:46:42'),
+(27, 2, 'Laravel-Test', 'https://github.com/Denis18UKS/Laravel-Test', '2024-12-04 09:46:42'),
+(28, 2, 'mdk0502', 'https://github.com/Denis18UKS/mdk0502', '2024-12-04 09:46:42'),
+(29, 2, 'MyWorks', 'https://github.com/Denis18UKS/MyWorks', '2024-12-04 09:46:42'),
+(30, 2, 'national-day', 'https://github.com/Denis18UKS/national-day', '2024-12-04 09:46:42'),
+(31, 2, 'newrepos', 'https://github.com/Denis18UKS/newrepos', '2024-12-04 09:46:42'),
+(32, 2, 'NewVersIP-Karpov-social', 'https://github.com/Denis18UKS/NewVersIP-Karpov-social', '2024-12-04 09:46:42'),
+(33, 2, 'oz-avaise', 'https://github.com/Denis18UKS/oz-avaise', '2024-12-04 09:46:42'),
+(34, 2, 'pinguins', 'https://github.com/Denis18UKS/pinguins', '2024-12-04 09:46:42'),
+(35, 2, 'pl_hesablama', 'https://github.com/Denis18UKS/pl_hesablama', '2024-12-04 09:46:42'),
+(36, 2, 'prj-management', 'https://github.com/Denis18UKS/prj-management', '2024-12-04 09:46:42'),
+(37, 2, 'prj-management-Karpov', 'https://github.com/Denis18UKS/prj-management-Karpov', '2024-12-04 09:46:42'),
+(38, 2, 'prj-managements', 'https://github.com/Denis18UKS/prj-managements', '2024-12-04 09:46:42'),
+(39, 2, 'prj-managementssss', 'https://github.com/Denis18UKS/prj-managementssss', '2024-12-04 09:46:42'),
+(40, 2, 'project-manager', 'https://github.com/Denis18UKS/project-manager', '2024-12-04 09:46:42'),
+(41, 2, 'Screen_Build', 'https://github.com/Denis18UKS/Screen_Build', '2024-12-04 09:46:42'),
+(42, 2, 'Teacher', 'https://github.com/Denis18UKS/Teacher', '2024-12-04 09:46:42'),
+(43, 4, '-', 'https://github.com/Molin1987/-', '2024-12-04 09:46:55'),
+(44, 4, 'BARSHIK', 'https://github.com/Molin1987/BARSHIK', '2024-12-04 09:46:55'),
+(45, 4, 'demoLaravel', 'https://github.com/Molin1987/demoLaravel', '2024-12-04 09:46:55'),
+(46, 4, 'Kursovaya', 'https://github.com/Molin1987/Kursovaya', '2024-12-04 09:46:55'),
+(47, 4, 'lab1', 'https://github.com/Molin1987/lab1', '2024-12-04 09:46:55'),
+(48, 4, 'Project-manager', 'https://github.com/Molin1987/Project-manager', '2024-12-04 09:46:55'),
+(49, 4, 'Scooter24', 'https://github.com/Molin1987/Scooter24', '2024-12-04 09:46:55'),
+(50, 4, 'test', 'https://github.com/Molin1987/test', '2024-12-04 09:46:55'),
+(51, 4, 'ToDo', 'https://github.com/Molin1987/ToDo', '2024-12-04 09:46:55'),
+(52, 4, 'Videohosting', 'https://github.com/Molin1987/Videohosting', '2024-12-04 09:46:55');
 
 -- --------------------------------------------------------
 
@@ -185,7 +254,7 @@ CREATE TABLE `users` (
   `avatar` varchar(255) DEFAULT NULL,
   `skills` text,
   `github_token` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Дамп данных таблицы `users`
@@ -195,7 +264,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `github_username`, `
 (1, 'Денис1', 'honorxpremium75@gmail.com', '$2b$10$HEJ9i2eWvXv7moRo9Ct51evndRQ/aUNpdrUHuQSGTWhnGgfZeLyqu', NULL, 'user', '2024-11-29 06:23:22', '2024-12-03 21:06:00', NULL, 'PHP, React, JavaScript и тд', NULL),
 (2, 'Денис', 'lakos208@gmail.com', '$2b$10$Ulun95o8.YWT2PurRKFD1eAL1Ee06oC4BP92P5KFSJn.j93pMOcoy', 'Denis18UKS', 'user', '2024-12-02 05:36:01', '2024-12-02 05:36:01', NULL, NULL, NULL),
 (3, 'Наташа', 'nat@mail.ru', '$2b$10$D3PavHm4LJuzZKNL4ImU0e/dg.EM42thE2Zeib0ExVY9eMy6zdcNS', 'Natalua9', 'user', '2024-12-02 07:12:09', '2024-12-03 22:53:46', '/uploads/avatars/1733266426052-s4mnDH4OCgA.jpg', 'Laravel, php, html, css, bootstrap, вёрстка по макету\r\n\r\n', NULL),
-(4, 'Марат', 'marat@mail.ru', '$2b$10$.G74puP.cLm39WDj7RjSSeF9XfhhQui5.X6T3QzxaTr3QO5G6ed72', 'Molin1987', 'user', '2024-12-03 21:16:28', '2024-12-03 21:16:28', NULL, NULL, NULL);
+(4, 'Марат', 'marat@mail.ru', '$2b$10$.G74puP.cLm39WDj7RjSSeF9XfhhQui5.X6T3QzxaTr3QO5G6ed72', 'Molin1987', 'user', '2024-12-03 21:16:28', '2024-12-03 21:16:28', NULL, NULL, NULL),
+(5, 'Влад', 'vladosOZ@mail.ru', '$2b$10$s0p4wp/FRnL0bt80pPC40eUOOLIT45.WrT.WC5CFLUd54mIsV1qKe', 'AikenOZ', 'user', '2024-12-04 07:44:21', '2024-12-04 15:18:14', '/uploads/avatars/1733325494043-photo_2024-10-28_19-11-46.jpg', 'Python, Не пишу код вручную, онли нейросеть\r\nЕсть своя ИИ - OZ-Avaise', NULL);
 
 -- --------------------------------------------------------
 
@@ -208,7 +278,7 @@ CREATE TABLE `user_hackathons` (
   `user_id` int NOT NULL,
   `hackathon_id` int NOT NULL,
   `joined_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Индексы сохранённых таблиц
@@ -300,7 +370,7 @@ ALTER TABLE `chats`
 -- AUTO_INCREMENT для таблицы `forums`
 --
 ALTER TABLE `forums`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `forum_answers`
@@ -324,13 +394,13 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT для таблицы `repositories`
 --
 ALTER TABLE `repositories`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `user_hackathons`

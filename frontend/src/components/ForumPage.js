@@ -55,15 +55,12 @@ const Forum = () => {
 
     useEffect(() => {
         if (showModal) {
-            // Добавляем обработчик клика на фоне
             window.addEventListener("click", handleOutsideClick);
         } else {
-            // Убираем обработчик клика
             window.removeEventListener("click", handleOutsideClick);
         }
 
         return () => {
-            // Очистка при размонтировании компонента
             window.removeEventListener("click", handleOutsideClick);
         };
     }, [showModal]);
@@ -82,17 +79,11 @@ const Forum = () => {
                     <div className="questions">
                         {questions.map((q) => (
                             <article key={q.id} className={`question ${q.status === 'Решён' ? 'resolved' : ''}`}>
-                                <h3>Тема: {q.title}</h3>
+                                <h3>Тема: {q.question}</h3>
                                 <p>Описание: {q.description}</p>
-                                <p>
-                                    <strong>Пользователь:</strong> {q.user}
-                                </p>
-                                <p>
-                                    <strong>Дата:</strong> {q.date}
-                                </p>
-                                <p>
-                                    <strong>Статус:</strong> {q.status}
-                                </p>
+                                <p><strong>Пользователь:</strong> {q.user}</p>
+                                <p><strong>Дата:</strong> {new Date(q.created_at).toLocaleDateString()}</p>
+                                <p><strong>Статус:</strong> {q.status}</p>
                             </article>
                         ))}
                     </div>

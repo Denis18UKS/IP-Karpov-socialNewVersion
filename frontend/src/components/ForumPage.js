@@ -1,49 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import './css-v2/ForumPage.css'; // Импортируем CSS файл
 
-const initialQuestions = [
-    {
-        id: 1,
-        title: 'Как работать с API?',
-        description: 'Не могу понять, как правильно обращаться к REST API.',
-        user: 'Иван Иванов',
-        date: '20.11.2024',
-        status: 'Открыт',
-        answers: [{ user: 'Максим', text: 'Через AJAX "прикреплён файл/скрин"' }],
-    },
-    {
-        id: 2,
-        title: 'Ошибка в JavaScript',
-        description: 'У меня возникает ошибка "undefined is not a function". Что это может быть?',
-        user: 'Петр Петров',
-        date: '19.11.2024',
-        status: 'Решён',
-        answers: [{ user: 'Максим', text: 'Неизвестная функция' }],
-    },
-];
-
 const Forum = () => {
-    const [questions, setQuestions] = useState(initialQuestions);
+    const [questions, setQuestions] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [newQuestion, setNewQuestion] = useState({ title: '', description: '' });
 
-    const addQuestion = (e) => {
+    // Функция для получения вопросов с сервера
+    const fetchQuestions = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/forums');
+            if (!response.ok) {
+                throw new Error('Ошибка при получении вопросов');
+            }
+            const data = await response.json();
+            setQuestions(data);
+        } catch (error) {
+            console.error('Ошибка при получении вопросов:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchQuestions();
+    }, []);
+
+    const addQuestion = async (e) => {
         e.preventDefault();
         if (newQuestion.title && newQuestion.description) {
-            setQuestions((prev) => [
-                ...prev,
-                {
-                    id: prev.length + 1,
-                    title: newQuestion.title,
-                    description: newQuestion.description,
-                    user: 'Вы',
-                    date: new Date().toLocaleDateString(),
-                    status: 'Открыт',
-                    answers: [],
-                },
-            ]);
-            setShowModal(false);
-            setNewQuestion({ title: '', description: '' });
+            try {
+                const response = await fetch('http://localhost:5000/forums', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: newQuestion.title,
+                        description: newQuestion.description,
+                        user_id: 1, // Замените на фактический ID пользователя, если это доступно
+                    }),
+                });
+                const newQuestionFromDB = await response.json();
+                setQuestions((prev) => [...prev, newQuestionFromDB]);
+                setShowModal(false);
+                setNewQuestion({ title: '', description: '' });
+            } catch (error) {
+                console.error('Ошибка при добавлении вопроса:', error);
+            }
         }
     };
 
@@ -56,15 +58,12 @@ const Forum = () => {
 
     useEffect(() => {
         if (showModal) {
-            // Добавляем обработчик клика на фоне
             window.addEventListener("click", handleOutsideClick);
         } else {
-            // Убираем обработчик клика
             window.removeEventListener("click", handleOutsideClick);
         }
 
         return () => {
-            // Очистка при размонтировании компонента
             window.removeEventListener("click", handleOutsideClick);
         };
     }, [showModal]);
@@ -83,17 +82,11 @@ const Forum = () => {
                     <div className="questions">
                         {questions.map((q) => (
                             <article key={q.id} className={`question ${q.status === 'Решён' ? 'resolved' : ''}`}>
-                                <h3>Тема: {q.title}</h3>
+                                <h3>Тема: {q.question}</h3>
                                 <p>Описание: {q.description}</p>
-                                <p>
-                                    <strong>Пользователь:</strong> {q.user}
-                                </p>
-                                <p>
-                                    <strong>Дата:</strong> {q.date}
-                                </p>
-                                <p>
-                                    <strong>Статус:</strong> {q.status}
-                                </p>
+                                <p><strong>Пользователь:</strong> {q.user}</p>
+                                <p><strong>Дата:</strong> {new Date(q.created_at).toLocaleDateString()}</p>
+                                <p><strong>Статус:</strong> {q.status}</p>
                             </article>
                         ))}
                     </div>

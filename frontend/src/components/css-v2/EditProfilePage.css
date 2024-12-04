@@ -1,0 +1,72 @@
+.edit-profile-container {
+    padding: 40px 20px; /* Увеличенные отступы */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.input-field, .textarea-field, .file-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.submit-btn {
+    background-color: #28a745; /* Зеленая кнопка */
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #218838; /* Темнее зеленый на наведение */
+}
+
+.cancel-btn {
+    border: none;
+    background-color: transparent; /* Прозрачная кнопка */
+    color: #007bff; /* Синий текст для отмены */
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    text-decoration: underline; /* Подчеркивание на наведение */
+}
+
+.error-message {
+    color: red;
+    text-align: center;
+}
+
+.success-message {
+    color: green;
+    text-align: center;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    .edit-profile-container {
+        padding: 20px; /* Уменьшение отступов для мобильных */
+    }
+
+    .input-field, .textarea-field {
+        padding: 8px; /* Уменьшение отступов внутри полей ввода */
+    }
+
+    .submit-btn {
+        padding: 8px; /* Уменьшение отступов на кнопках */
+    }
+}

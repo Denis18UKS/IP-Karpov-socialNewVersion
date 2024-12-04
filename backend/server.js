@@ -15,9 +15,11 @@ app.use('/uploads/avatars/', express.static(path.join(__dirname, 'uploads')));
 app.use('/github', githubRoutes);
 
 // Логирование запросов
-app.use((req, res, next) => {
+app.use((err, req, res, next) => {
     console.log(`Request URL: ${req.url}`);  // Логируем путь запроса
     next();
+    console.error(err.stack);
+    res.status(500).json({ message: 'Ошибка сервера' });
 });
 
 // Разрешаем CORS для всех доменов
@@ -25,7 +27,8 @@ app.use(cors({
     origin: '*',  // Разрешаем доступ с любых источников
     optionsSuccessStatus: 200,  // Для старых браузеров
     methods: 'GET,POST,PUT,DELETE',  // Разрешенные методы
-    allowedHeaders: 'Content-Type,Authorization', // Разрешенные заголовки
+    allowedHeaders: 'Content-Type,Authorization',
+    credentials: true, // Разрешенные заголовки
 }));
 
 app.use(express.json()); // Для обработки JSON-запросов
@@ -305,6 +308,91 @@ app.get('/users', verifyToken, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Ошибка сервера при получении пользователей' });
+    }
+});
+
+app.get('/chats', verifyToken, async (req, res) => {
+    const { id } = req.user;
+    try {
+        const [chats] = await db.query(
+            `SELECT c.id, u1.username AS user1, u2.username AS user2, c.created_at
+            FROM chats c
+            JOIN users u1 ON c.user_id_1 = u1.id
+            JOIN users u2 ON c.user_id_2 = u2.id
+            WHERE c.user_id_1 = ? OR c.user_id_2 = ?`,
+            [id, id]
+        );
+        res.json(chats);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при получении чатов' });
+    }
+});
+
+
+app.post('/messages', verifyToken, async (req, res) => {
+    const { chatId, message } = req.body;
+    const { id: userId } = req.user;
+
+    if (!message || !chatId) {
+        return res.status(400).json({ message: 'Чат и сообщение обязательны' });
+    }
+
+    try {
+        // Сохранение сообщения в базе данных
+        await db.query(
+            'INSERT INTO messages (chat_id, user_id, message) VALUES (?, ?, ?)',
+            [chatId, userId, message]
+        );
+        res.status(201).json({ message: 'Сообщение отправлено' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при отправке сообщения' });
+    }
+});
+
+app.get('/messages/:chatId', verifyToken, async (req, res) => {
+    const { chatId } = req.params;
+    try {
+        const [messages] = await db.query(
+            'SELECT m.*, u.username FROM messages m JOIN users u ON m.user_id = u.id WHERE m.chat_id = ? ORDER BY m.created_at',
+            [chatId]
+        );
+        console.log(messages); // Логирование сообщений
+        res.json(messages);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при получении сообщений' });
+    }
+});
+
+
+
+app.post('/chats', verifyToken, async (req, res) => {
+    const { userId2 } = req.body; // ID другого пользователя
+    const { id: userId1 } = req.user;
+
+    try {
+        // Проверяем, существует ли чат
+        const [existingChat] = await db.query(
+            'SELECT * FROM chats WHERE (user_id_1 = ? AND user_id_2 = ?) OR (user_id_1 = ? AND user_id_2 = ?)',
+            [userId1, userId2, userId2, userId1]
+        );
+
+        if (existingChat.length > 0) {
+            return res.status(200).json(existingChat[0]); // Возвращаем существующий чат
+        }
+
+        // Если нет, создаём новый
+        const [result] = await db.query(
+            'INSERT INTO chats (user_id_1, user_id_2) VALUES (?, ?)',
+            [userId1, userId2]
+        );
+
+        res.status(201).json({ id: result.insertId, user_id_1: userId1, user_id_2: userId2 });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при создании чата' });
     }
 });
 

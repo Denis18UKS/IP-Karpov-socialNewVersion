@@ -1,0 +1,45 @@
+.forum-page {
+    padding: 40px 20px; /* Увеличенные отступы вокруг */
+}
+
+.forum {
+    background: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.forum h2 {
+    font-size: 32px;
+    color: #ff6f91;
+}
+
+.question {
+    background: #f8f9fa; /* Светлый фон для вопросов */
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.question.resolved {
+    background: #d4edda; /* Цвет для решенных вопросов */
+}
+
+.btn {
+    background-color: #007bff; /* Синий цвет */
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #0056b3; /* Темнее синий на наведение */
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}

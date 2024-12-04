@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import './css-v2/Header.css'; // Импортируем CSS файл
 
 const Header = ({ isAuthenticated, setIsAuthenticated }) => {
     const handleLogout = () => {

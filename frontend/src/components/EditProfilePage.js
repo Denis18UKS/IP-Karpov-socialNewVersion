@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import './EditProfilePage.css'
+import './css-v2/EditProfilePage.css'
 
 const EditProfilePage = () => {
     const [avatar, setAvatar] = useState(null);

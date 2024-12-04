@@ -1,4 +1,5 @@
 import React from 'react';
+import './css-v2/XakatonsPage.css';
 
 const XakatonsPage = () => {
     return (

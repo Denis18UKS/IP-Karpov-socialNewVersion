@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import './style-repos.css';
+import './css-v2/MyProfilePage.css'; // Импортируем CSS файл
 
 const UserProfilePage = () => {
     const { username } = useParams(); // Получаем имя пользователя из URL
@@ -47,6 +47,51 @@ const UserProfilePage = () => {
 
         fetchUserData();
     }, [username]);
+
+    const handleChatClick = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error("Токен не найден, требуется авторизация!");
+            return;
+        }
+
+        try {
+            // Получаем ID пользователя, с которым хотим создать чат
+            const response = await fetch(`http://localhost:5000/users/${username}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Ошибка при загрузке данных пользователя для чата");
+            }
+
+            const data = await response.json();
+            const userToChat = data.user;
+
+            // Проверяем наличие чата
+            const chatResponse = await fetch(`http://localhost:5000/chats`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ userId2: userToChat.id }), // предполагается, что id пользователя есть в объекте user
+            });
+
+            if (chatResponse.ok) {
+                const chatData = await chatResponse.json();
+                navigate(`/chats/${chatData.id}`); // Переходите к чату по ID
+            } else {
+                throw new Error('Ошибка при получении или создании чата');
+            }
+
+        } catch (error) {
+            console.error("Ошибка:", error);
+        }
+    };
 
     const fetchCommits = async (repoName) => {
         setModalType("commits");
@@ -125,7 +170,7 @@ const UserProfilePage = () => {
                     <div id="skills">
                         <h2>{user.username}</h2>
                         <p>Навыки: {user.skills || "Не указаны"}</p>
-                        <button onClick={() => navigate("/chats")}>Написать</button>
+                        <button onClick={handleChatClick}>Написать</button>
                     </div>
                 </section>
 

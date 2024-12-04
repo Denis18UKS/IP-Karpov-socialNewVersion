@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import './style-repos.css';
+import './css-v2/MyProfilePage.css'; // Импортируем CSS файл
+
 
 const MyProfilePage = () => {
     const [user, setUser] = useState(null);
@@ -179,7 +180,7 @@ const MyProfilePage = () => {
                         <h2>{user.username}</h2>
                         <p>Навыки: {user.skills || "Не указаны"}</p>
                         {/* Скрываем кнопку "Написать" для текущего пользователя */}
-                        {user.username !== currentUserUsername && (
+                        {user.username === currentUserUsername && (
                             <button onClick={() => navigate("/chats")}>Написать</button>
                         )}
                     </div>

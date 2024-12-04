@@ -1,0 +1,114 @@
+/* Основной стиль для страницы регистрации */
+main {
+    padding: 40px 20px; /* Увеличим отступы */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(90deg, #e3fdfd, #ffe6fa); /* Добавим градиентный фон */
+    min-height: 100vh; /* Заполним всю высоту страницы */
+}
+
+/* Форма регистрации */
+form {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px; /* Уголки становятся более округлыми */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease; /* Сделаем небольшую анимацию при наведении */
+}
+
+/* Эффект при наведении на форму */
+form:hover {
+    transform: translateY(-3px);
+}
+
+/* Стиль для полей ввода */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: 'Roboto', sans-serif; /* Подключим шрифт из Header.css */
+    transition: border-color 0.3s ease; /* Для плавного эффекта в цветах */
+}
+
+/* Эффект для полей ввода при фокусе */
+input:focus {
+    border-color: #ff758c; /* Цвет для рамки при фокусе */
+    outline: none; /* Убираем стандартный обвод */
+}
+
+/* Стиль для кнопок */
+button {
+    background-color: #28a745; /* Зеленый цвет для кнопок */
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px; /* Округленные углы */
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: background 0.3s, transform 0.2s; /* Эффекты плавного перехода */
+}
+
+/* Эффект при наведении на кнопку */
+button:hover {
+    background-color: #218838; /* Темнее зеленый на наведение */
+    transform: translateY(-2px); /* Поднимаем кнопку */
+}
+
+/* Модальное окно */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Стиль для содержимого модального окна */
+.modal-content {
+    background: #fff;
+    padding: 30px; /* Изменим отступы для большей площади */
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    animation: scaleUp 0.3s ease-in-out; /* Включим анимацию */
+}
+
+/* Заголовок в модальном окне */
+.modal-content h2 {
+    margin-top: 0;
+}
+
+/* Анимация для модального окна */
+@keyframes scaleUp {
+    from {
+        transform: scale(0.8);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    main {
+        padding: 20px; /* Уменьшаем отступы на мобильных */
+    }
+
+    form {
+        padding: 20px; /* Уменьшаем отступы внутри формы */
+    }
+
+    button {
+        padding: 10px; /* Уменьшаем отступы на кнопках */
+    }
+}

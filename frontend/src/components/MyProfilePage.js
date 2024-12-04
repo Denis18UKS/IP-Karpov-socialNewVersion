@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './css-v2/MyProfilePage.css'; // Импортируем CSS файл
 
-
 const MyProfilePage = () => {
     const [user, setUser] = useState(null);
     const [repositories, setRepositories] = useState([]);
@@ -148,6 +147,24 @@ const MyProfilePage = () => {
             console.error("Ошибка при удалении аватара:", error);
         }
     };
+
+    const handleOutsideClick = (event) => {
+        if (event.target.classList.contains("modal")) {
+            closeModal();
+        }
+    };
+
+    useEffect(() => {
+        if (isModalOpen) {
+            window.addEventListener("click", handleOutsideClick);
+        } else {
+            window.removeEventListener("click", handleOutsideClick);
+        }
+
+        return () => {
+            window.removeEventListener("click", handleOutsideClick);
+        };
+    }, [isModalOpen]);
 
     if (loading) {
         return <p>Загрузка...</p>;

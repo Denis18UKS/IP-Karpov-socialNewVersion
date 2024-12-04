@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './css-v2/ForumPage.css'; // Импортируем CSS файл
 
 const initialQuestions = [
@@ -46,6 +46,28 @@ const Forum = () => {
             setNewQuestion({ title: '', description: '' });
         }
     };
+
+    // Закрытие модального окна при клике вне его
+    const handleOutsideClick = (event) => {
+        if (event.target.classList.contains("modal-forum")) {
+            setShowModal(false);
+        }
+    };
+
+    useEffect(() => {
+        if (showModal) {
+            // Добавляем обработчик клика на фоне
+            window.addEventListener("click", handleOutsideClick);
+        } else {
+            // Убираем обработчик клика
+            window.removeEventListener("click", handleOutsideClick);
+        }
+
+        return () => {
+            // Очистка при размонтировании компонента
+            window.removeEventListener("click", handleOutsideClick);
+        };
+    }, [showModal]);
 
     return (
         <div className="forum-page">

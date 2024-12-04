@@ -13,30 +13,6 @@ header {
     transition: all 0.4s ease;
 }
 
-/* Легкая анимация градиента фона */
-header::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(120deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.4));
-    animation: glowShift 6s infinite alternate;
-    z-index: -1;
-    border-radius: 10px;
-}
-
-/* Анимация перелива */
-@keyframes glowShift {
-    from {
-        transform: translateX(-10%);
-    }
-    to {
-        transform: translateX(10%);
-    }
-}
-
 h1 {
     color: #ff6f91;
     font-size: 32px;
@@ -118,15 +94,18 @@ nav a:hover::after {
 }
 
 /* Адаптивный дизайн */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     header {
+        padding: 20px 30px;
         flex-direction: column;
         gap: 20px;
+        align-items: flex-start;
+        position: relative;
     }
 
     nav {
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     nav a {
@@ -135,6 +114,72 @@ nav a:hover::after {
     }
 
     .exit-btn {
-        align-self: center;
+        align-self: flex-start;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+}
+
+/* Мобильная адаптивность (до 768px) */
+@media (max-width: 768px) {
+    header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        position: relative;
+    }
+
+    nav {
+        gap: 10px;
+        justify-content: center;
+    }
+
+    nav a {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    .exit-btn {
+        width: 100%;
+        padding: 12px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+}
+
+/* Супер мобильная версия (до 480px) */
+@media (max-width: 480px) {
+    header {
+        padding: 10px 15px;
+        position: relative;
+        
+    }
+
+    h1 {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    nav {
+        gap: 10px;
+        justify-content: center;
+    }
+
+    nav a {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .exit-btn {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        text-align: center;
     }
 }

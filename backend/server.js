@@ -101,6 +101,26 @@ app.post('/register', async (req, res) => {
             [username, email, hashedPassword, github_username || null]
         );
 
+        // Получаем репозитории с GitHub, если github_username передан
+        let repositories = [];
+        if (github_username) {
+            repositories = await fetchRepositories(github_username); // Получаем репозитории с GitHub
+        }
+
+        // Сохраняем репозитории в базу данных
+        const lastSynced = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+        for (const repo of repositories) {
+            console.log('Сохраняем репозиторий:', repo);  // Логирование каждого репозитория
+            await db.query(
+                'INSERT INTO repositories (user_id, repo_name, repo_url, last_synced) VALUES (?, ?, ?, ?)',
+                [result.insertId, repo.name, repo.html_url, lastSynced]
+            );
+        }
+
+
+
+        // Генерация JWT токена
         const token = generateToken({ id: result.insertId, username, email });
 
         res.status(201).json({ message: 'Пользователь успешно зарегистрирован!', token });
@@ -109,6 +129,20 @@ app.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Ошибка сервера при регистрации' });
     }
 });
+
+// Функция для получения репозиториев с GitHub
+const fetchRepositories = async (githubUsername) => {
+    try {
+        const response = await axios.get(`https://api.github.com/users/${githubUsername}/repos`);
+        console.log("GitHub Repositories:", response.data);  // Логируем полученные репозитории
+        return response.data;
+    } catch (error) {
+        console.error('Ошибка при получении репозиториев с GitHub:', error.message);
+        return [];
+    }
+};
+
+
 
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
@@ -131,6 +165,25 @@ app.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Неверный пароль!' });
         }
 
+        // Проверяем, есть ли репозитории в базе данных
+        const [repos] = await db.query('SELECT * FROM repositories WHERE user_id = ?', [users[0].id]);
+
+        // Если репозиториев нет, загружаем их с GitHub и сохраняем
+        if (repos.length === 0 && users[0].github_username) {
+            const repositories = await fetchRepositories(users[0].github_username);
+
+            const lastSynced = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+            for (const repo of repositories) {
+                console.log('Сохраняем репозиторий при авторизации:', repo);  // Логирование каждого репозитория
+                await db.query(
+                    'INSERT INTO repositories (user_id, repo_name, repo_url, last_synced) VALUES (?, ?, ?, ?)',
+                    [users[0].id, repo.name, repo.html_url, lastSynced]
+                );
+            }
+        }
+
+
         // Генерация JWT
         const token = generateToken({ id: users[0].id, email: users[0].email, username: users[0].username });
 
@@ -140,6 +193,7 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Ошибка на сервере' });
     }
 });
+
 
 // Маршрут для получения профиля текущего пользователя
 app.get('/profile', verifyToken, async (req, res) => {

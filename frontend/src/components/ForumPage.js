@@ -1,49 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import './css-v2/ForumPage.css'; // Импортируем CSS файл
 
-const initialQuestions = [
-    {
-        id: 1,
-        title: 'Как работать с API?',
-        description: 'Не могу понять, как правильно обращаться к REST API.',
-        user: 'Иван Иванов',
-        date: '20.11.2024',
-        status: 'Открыт',
-        answers: [{ user: 'Максим', text: 'Через AJAX "прикреплён файл/скрин"' }],
-    },
-    {
-        id: 2,
-        title: 'Ошибка в JavaScript',
-        description: 'У меня возникает ошибка "undefined is not a function". Что это может быть?',
-        user: 'Петр Петров',
-        date: '19.11.2024',
-        status: 'Решён',
-        answers: [{ user: 'Максим', text: 'Неизвестная функция' }],
-    },
-];
-
 const Forum = () => {
-    const [questions, setQuestions] = useState(initialQuestions);
+    const [questions, setQuestions] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [newQuestion, setNewQuestion] = useState({ title: '', description: '' });
 
-    const addQuestion = (e) => {
+    // Функция для получения вопросов с сервера
+    const fetchQuestions = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/forums');
+            const data = await response.json();
+            setQuestions(data);
+        } catch (error) {
+            console.error('Ошибка при получении вопросов:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchQuestions();
+    }, []);
+
+    const addQuestion = async (e) => {
         e.preventDefault();
         if (newQuestion.title && newQuestion.description) {
-            setQuestions((prev) => [
-                ...prev,
-                {
-                    id: prev.length + 1,
-                    title: newQuestion.title,
-                    description: newQuestion.description,
-                    user: 'Вы',
-                    date: new Date().toLocaleDateString(),
-                    status: 'Открыт',
-                    answers: [],
-                },
-            ]);
-            setShowModal(false);
-            setNewQuestion({ title: '', description: '' });
+            try {
+                const response = await fetch('http://localhost:5000/forums', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: newQuestion.title,
+                        description: newQuestion.description,
+                        user_id: 1, // Предположим, что пользователь с ID 1
+                    }),
+                });
+                const newQuestionFromDB = await response.json();
+                setQuestions((prev) => [...prev, newQuestionFromDB]);
+                setShowModal(false);
+                setNewQuestion({ title: '', description: '' });
+            } catch (error) {
+                console.error('Ошибка при добавлении вопроса:', error);
+            }
         }
     };
 

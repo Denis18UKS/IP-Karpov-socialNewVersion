@@ -13,6 +13,7 @@ const Forum = () => {
             if (!response.ok) {
                 throw new Error('Ошибка при получении вопросов');
             }
+
             const data = await response.json();
             setQuestions(data);
         } catch (error) {

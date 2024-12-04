@@ -36,7 +36,7 @@ const Forum = () => {
                     body: JSON.stringify({
                         title: newQuestion.title,
                         description: newQuestion.description,
-                        user_id: 1, // Замените на фактический ID пользователя, если это доступно
+                        user_id: 1, // Предположим, что пользователь с ID 1
                     }),
                 });
                 const newQuestionFromDB = await response.json();

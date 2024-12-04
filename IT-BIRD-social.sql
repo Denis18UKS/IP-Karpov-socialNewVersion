@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Дек 02 2024 г., 10:42
+-- Время создания: Дек 04 2024 г., 02:59
 -- Версия сервера: 8.0.30
 -- Версия PHP: 8.1.9
 
@@ -46,6 +46,17 @@ CREATE TABLE `chats` (
   `user_id_2` int NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `chats`
+--
+
+INSERT INTO `chats` (`id`, `user_id_1`, `user_id_2`, `created_at`) VALUES
+(1, 1, 2, '2024-12-03 18:12:23'),
+(2, 1, 3, '2024-12-03 18:56:11'),
+(3, 4, 1, '2024-12-03 21:16:55'),
+(4, 4, 2, '2024-12-03 21:26:01'),
+(5, 4, 3, '2024-12-03 21:29:24');
 
 -- --------------------------------------------------------
 
@@ -109,6 +120,39 @@ CREATE TABLE `messages` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Дамп данных таблицы `messages`
+--
+
+INSERT INTO `messages` (`id`, `chat_id`, `user_id`, `message`, `created_at`) VALUES
+(1, 1, 1, 'test', '2024-12-03 18:52:00'),
+(2, 3, 4, 'Привет', '2024-12-03 21:21:04'),
+(3, 3, 4, 'Привет', '2024-12-03 21:30:49'),
+(4, 3, 4, 'Как дела?', '2024-12-03 21:30:55'),
+(5, 3, 4, 'Не понял', '2024-12-03 21:31:15'),
+(6, 3, 1, 'Привет, норм, у тя?', '2024-12-03 21:39:04'),
+(7, 3, 1, 'Ладнооо', '2024-12-03 21:59:17'),
+(8, 3, 1, 'цдцвлдцвждцж', '2024-12-03 22:08:37'),
+(9, 1, 1, 'дцдцлвжвцд', '2024-12-03 22:08:45'),
+(10, 1, 1, 'Ладно', '2024-12-03 22:08:47'),
+(11, 1, 1, 'Хрен ', '2024-12-03 22:08:49'),
+(12, 1, 1, 'С ним', '2024-12-03 22:08:50'),
+(13, 1, 1, 'поойдет', '2024-12-03 22:08:52'),
+(14, 2, 1, 'Привет', '2024-12-03 22:09:04'),
+(15, 1, 1, 'а где', '2024-12-03 22:46:39'),
+(16, 3, 1, 'цвцв', '2024-12-03 23:26:16'),
+(17, 3, 1, 'вццвцв', '2024-12-03 23:26:16'),
+(18, 3, 1, 'цвцввц', '2024-12-03 23:26:17'),
+(19, 3, 1, 'вцвцвц', '2024-12-03 23:26:17'),
+(20, 3, 1, 'цвцввццв', '2024-12-03 23:26:18'),
+(21, 3, 1, 'цввццв', '2024-12-03 23:26:19'),
+(22, 2, 1, 'Ehf', '2024-12-03 23:42:31'),
+(23, 2, 1, 'Ура*', '2024-12-03 23:42:33'),
+(24, 2, 1, 'Это теперь работает', '2024-12-03 23:42:38'),
+(25, 2, 1, 'победа', '2024-12-03 23:42:40'),
+(26, 2, 1, 'Ееееееее', '2024-12-03 23:42:43'),
+(27, 1, 1, 'Ура, работает!!!!', '2024-12-03 23:42:57');
+
 -- --------------------------------------------------------
 
 --
@@ -139,17 +183,19 @@ CREATE TABLE `users` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `avatar` varchar(255) DEFAULT NULL,
-  `skills` text
+  `skills` text,
+  `github_token` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Дамп данных таблицы `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `github_username`, `role`, `created_at`, `updated_at`, `avatar`, `skills`) VALUES
-(1, 'Денис', 'honorxpremium75@gmail.com', '$2b$10$HEJ9i2eWvXv7moRo9Ct51evndRQ/aUNpdrUHuQSGTWhnGgfZeLyqu', NULL, 'user', '2024-11-29 06:23:22', '2024-12-02 05:12:36', NULL, NULL),
-(2, 'Денис', 'lakos208@gmail.com', '$2b$10$Ulun95o8.YWT2PurRKFD1eAL1Ee06oC4BP92P5KFSJn.j93pMOcoy', 'Denis18UKS', 'user', '2024-12-02 05:36:01', '2024-12-02 05:36:01', NULL, NULL),
-(3, 'Наташа', 'nat@mail.ru', '$2b$10$D3PavHm4LJuzZKNL4ImU0e/dg.EM42thE2Zeib0ExVY9eMy6zdcNS', 'Natalua9', 'user', '2024-12-02 07:12:09', '2024-12-02 07:12:09', NULL, NULL);
+INSERT INTO `users` (`id`, `username`, `email`, `password`, `github_username`, `role`, `created_at`, `updated_at`, `avatar`, `skills`, `github_token`) VALUES
+(1, 'Денис1', 'honorxpremium75@gmail.com', '$2b$10$HEJ9i2eWvXv7moRo9Ct51evndRQ/aUNpdrUHuQSGTWhnGgfZeLyqu', NULL, 'user', '2024-11-29 06:23:22', '2024-12-03 21:06:00', NULL, 'PHP, React, JavaScript и тд', NULL),
+(2, 'Денис', 'lakos208@gmail.com', '$2b$10$Ulun95o8.YWT2PurRKFD1eAL1Ee06oC4BP92P5KFSJn.j93pMOcoy', 'Denis18UKS', 'user', '2024-12-02 05:36:01', '2024-12-02 05:36:01', NULL, NULL, NULL),
+(3, 'Наташа', 'nat@mail.ru', '$2b$10$D3PavHm4LJuzZKNL4ImU0e/dg.EM42thE2Zeib0ExVY9eMy6zdcNS', 'Natalua9', 'user', '2024-12-02 07:12:09', '2024-12-03 22:53:46', '/uploads/avatars/1733266426052-s4mnDH4OCgA.jpg', 'Laravel, php, html, css, bootstrap, вёрстка по макету\r\n\r\n', NULL),
+(4, 'Марат', 'marat@mail.ru', '$2b$10$.G74puP.cLm39WDj7RjSSeF9XfhhQui5.X6T3QzxaTr3QO5G6ed72', 'Molin1987', 'user', '2024-12-03 21:16:28', '2024-12-03 21:16:28', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -248,7 +294,7 @@ ALTER TABLE `admin_logs`
 -- AUTO_INCREMENT для таблицы `chats`
 --
 ALTER TABLE `chats`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `forums`
@@ -272,7 +318,7 @@ ALTER TABLE `hackathons`
 -- AUTO_INCREMENT для таблицы `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT для таблицы `repositories`
@@ -284,7 +330,7 @@ ALTER TABLE `repositories`
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `user_hackathons`

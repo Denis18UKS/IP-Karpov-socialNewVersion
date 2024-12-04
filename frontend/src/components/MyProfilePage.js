@@ -179,10 +179,6 @@ const MyProfilePage = () => {
                     <div id="skills">
                         <h2>{user.username}</h2>
                         <p>Навыки: {user.skills || "Не указаны"}</p>
-                        {/* Скрываем кнопку "Написать" для текущего пользователя */}
-                        {user.username === currentUserUsername && (
-                            <button onClick={() => navigate("/chats")}>Написать</button>
-                        )}
                     </div>
                 </section>
 
@@ -251,72 +247,70 @@ const MyProfilePage = () => {
             </footer>
 
             {isModalOpen && (
-                <div id="bg-blur-modal">
-                    <div className="modal">
-                        <div className="modal-content">
-                            <span className="close-button" onClick={closeModal}>
-                                &times;
-                            </span>
-                            <h2>Репозиторий: {selectedRepo}</h2>
-                            {modalType === "commits" && (
-                                <table className="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Автор</th>
-                                            <th>Сообщение</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {commits.length > 0 ? (
-                                            commits.map((commit, index) => (
-                                                <tr key={index}>
-                                                    <td>{commit.commit.author.name}</td>
-                                                    <td>{commit.commit.message}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="2">Коммитов не найдено</td>
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close-button" onClick={closeModal}>
+                            &times;
+                        </span>
+                        <h2>Репозиторий: {selectedRepo}</h2>
+                        {modalType === "commits" && (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Автор</th>
+                                        <th>Сообщение</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {commits.length > 0 ? (
+                                        commits.map((commit, index) => (
+                                            <tr key={index}>
+                                                <td>{commit.commit.author.name}</td>
+                                                <td>{commit.commit.message}</td>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            )}
-                            {modalType === "files" && (
-                                <table className="table">
-                                    <thead>
+                                        ))
+                                    ) : (
                                         <tr>
-                                            <th>Имя файла</th>
-                                            <th>Тип</th>
-                                            <th>Ссылка</th>
+                                            <td colSpan="2">Коммитов не найдено</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {branches.length > 0 ? (
-                                            branches.map((file) => (
-                                                <tr key={file.sha}>
-                                                    <td>{file.name}</td>
-                                                    <td>{file.type}</td>
-                                                    <td>
-                                                        {file.type === 'file' ? (
-                                                            <a href={file.download_url} target="_blank" rel="noopener noreferrer">
-                                                                Скачать
-                                                            </a>
-                                                        ) : (
-                                                            <span>Папка</span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="3">Файлов не найдено</td>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                        {modalType === "files" && (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Имя файла</th>
+                                        <th>Тип</th>
+                                        <th>Ссылка</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {branches.length > 0 ? (
+                                        branches.map((file) => (
+                                            <tr key={file.sha}>
+                                                <td>{file.name}</td>
+                                                <td>{file.type}</td>
+                                                <td>
+                                                    {file.type === 'file' ? (
+                                                        <a href={file.download_url} target="_blank" rel="noopener noreferrer">
+                                                            Скачать
+                                                        </a>
+                                                    ) : (
+                                                        <span>Папка</span>
+                                                    )}
+                                                </td>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            )}
-                        </div>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Файлов не найдено</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             )}

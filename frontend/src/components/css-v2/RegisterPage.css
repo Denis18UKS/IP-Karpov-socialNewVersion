@@ -62,19 +62,18 @@ button:hover {
 }
 
 /* Модальное окно */
-/* Модальное окно */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.5); /* Меньшая затемненность */
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    /* Отключаем прокрутку на фоне */
+    z-index: 105; /* Убедитесь, что модалка имеет более высокий z-index */
 }
 
 /* Стиль для содержимого модального окна */
@@ -85,15 +84,10 @@ button:hover {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     animation: scaleUp 0.3s ease-in-out;
     max-width: 600px;
-    /* Ограничиваем максимальную ширину */
     width: 100%;
-    /* Ширина 100%, чтобы окно не выходило за пределы экрана */
     margin: 50px auto;
-    /* Центрируем окно по горизонтали */
     max-height: 80vh;
-    /* Ограничиваем максимальную высоту, 80% от высоты экрана */
     overflow-y: auto;
-    /* Добавляем вертикальную прокрутку при необходимости */
     margin-top: 120px; /* Отступ сверху для предотвращения перекрытия хедером */
 }
 

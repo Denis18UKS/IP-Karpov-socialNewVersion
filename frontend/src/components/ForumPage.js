@@ -80,7 +80,7 @@ const Forum = () => {
 
             {/* Модальное окно */}
             {showModal && (
-                <div className="modal">
+                <div className="modal-forum">
                     <div className="modal-content">
                         <h3>Задать вопрос</h3>
                         <form onSubmit={addQuestion}>

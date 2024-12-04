@@ -48,51 +48,6 @@ const UserProfilePage = () => {
         fetchUserData();
     }, [username]);
 
-    const handleChatClick = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            console.error("Токен не найден, требуется авторизация!");
-            return;
-        }
-
-        try {
-            // Получаем ID пользователя, с которым хотим создать чат
-            const response = await fetch(`http://localhost:5000/users/${username}`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Ошибка при загрузке данных пользователя для чата");
-            }
-
-            const data = await response.json();
-            const userToChat = data.user;
-
-            // Проверяем наличие чата
-            const chatResponse = await fetch(`http://localhost:5000/chats`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ userId2: userToChat.id }), // предполагается, что id пользователя есть в объекте user
-            });
-
-            if (chatResponse.ok) {
-                const chatData = await chatResponse.json();
-                navigate(`/chats/${chatData.id}`); // Переходите к чату по ID
-            } else {
-                throw new Error('Ошибка при получении или создании чата');
-            }
-
-        } catch (error) {
-            console.error("Ошибка:", error);
-        }
-    };
-
     const fetchCommits = async (repoName) => {
         setModalType("commits");
         setIsModalOpen(true);
@@ -154,7 +109,7 @@ const UserProfilePage = () => {
         const handleClickOutside = (event) => {
             const modal = document.querySelector('.modal');
             const modalContent = document.querySelector('.modal-content');
-            
+
             if (modal && !modalContent.contains(event.target)) {
                 closeModal();
             }
@@ -192,7 +147,6 @@ const UserProfilePage = () => {
                     <div id="skills">
                         <h2>{user.username}</h2>
                         <p>Навыки: {user.skills || "Не указаны"}</p>
-                        <button onClick={handleChatClick}>Написать</button>
                     </div>
                 </section>
 
@@ -261,72 +215,72 @@ const UserProfilePage = () => {
             </footer>
 
             {isModalOpen && (
-                <div id="bg-blur-modal">
-                    <div className="modal">
-                        <div className="modal-content">
-                            <span className="close-button" onClick={closeModal}>
-                                &times;
-                            </span>
-                            <h2>Репозиторий: {selectedRepo}</h2>
-                            {modalType === "commits" && (
-                                <table className="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Автор</th>
-                                            <th>Сообщение</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {commits.length > 0 ? (
-                                            commits.map((commit, index) => (
-                                                <tr key={index}>
-                                                    <td>{commit.commit.author.name}</td>
-                                                    <td>{commit.commit.message}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="2">Коммитов не найдено</td>
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close-button" onClick={closeModal}>
+                            &times;
+                        </span>
+                        <section id="table-content">
+                        <h2>Репозиторий: {selectedRepo}</h2>
+                        {modalType === "commits" && (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Автор</th>
+                                        <th>Сообщение</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {commits.length > 0 ? (
+                                        commits.map((commit, index) => (
+                                            <tr key={index}>
+                                                <td>{commit.commit.author.name}</td>
+                                                <td>{commit.commit.message}</td>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            )}
-                            {modalType === "files" && (
-                                <table className="table">
-                                    <thead>
+                                        ))
+                                    ) : (
                                         <tr>
-                                            <th>Имя файла</th>
-                                            <th>Тип</th>
-                                            <th>Ссылка</th>
+                                            <td colSpan="2">Коммитов не найдено</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {branches.length > 0 ? (
-                                            branches.map((file) => (
-                                                <tr key={file.sha}>
-                                                    <td>{file.name}</td>
-                                                    <td>{file.type}</td>
-                                                    <td>
-                                                        {file.type === 'file' ? (
-                                                            <a href={file.download_url} target="_blank" rel="noopener noreferrer">
-                                                                Скачать
-                                                            </a>
-                                                        ) : (
-                                                            <span>Папка</span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="3">Файлов не найдено</td>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                        {modalType === "files" && (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Имя файла</th>
+                                        <th>Тип</th>
+                                        <th>Ссылка</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {branches.length > 0 ? (
+                                        branches.map((file) => (
+                                            <tr key={file.sha}>
+                                                <td>{file.name}</td>
+                                                <td>{file.type}</td>
+                                                <td>
+                                                    {file.type === 'file' ? (
+                                                        <a href={file.download_url} target="_blank" rel="noopener noreferrer">
+                                                            Скачать
+                                                        </a>
+                                                    ) : (
+                                                        <span>Папка</span>
+                                                    )}
+                                                </td>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            )}
-                        </div>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Файлов не найдено</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                        </section>
                     </div>
                 </div>
             )}

@@ -32,6 +32,18 @@
     background-color: #e0e0e0;
 }
 
+.user-list li.active-chat {
+    background-color: mediumaquamarine; /* Зеленый фон для активного чата */
+    color: white; /* Белый цвет текста */
+    font-weight: bold; /* Жирный шрифт */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Плавные переходы */
+}
+
+.user-list li.active-chat:hover {
+    background-color: teal; /* Немного темнее зеленый при наведении */
+}
+
+
 .user-list img {
     width: 40px;
     height: 40px;

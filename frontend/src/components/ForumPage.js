@@ -4,7 +4,15 @@ import './css-v2/ForumPage.css'; // Импортируем CSS файл
 const Forum = () => {
     const [questions, setQuestions] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [showAnswerModal, setShowAnswerModal] = useState(false);
+    const [showAddAnswerModal, setShowAddAnswerModal] = useState(false);
+    const [selectedQuestion, setSelectedQuestion] = useState(null);
+    const [answers, setAnswers] = useState([]);
     const [newQuestion, setNewQuestion] = useState({ title: '', description: '' });
+    const [newAnswer, setNewAnswer] = useState('');
+
+    const userId = localStorage.getItem('userId'); // ID текущего пользователя
+    const userRole = localStorage.getItem('role'); // Роль пользователя ('user', 'admin')
 
     // Функция для получения вопросов с сервера
     const fetchQuestions = async () => {
@@ -14,6 +22,18 @@ const Forum = () => {
             setQuestions(data);
         } catch (error) {
             console.error('Ошибка при получении вопросов:', error);
+        }
+    };
+
+    // Функция для получения ответов для выбранного вопроса
+    const fetchAnswers = async (questionId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/forums/${questionId}/answers`);
+            const data = await response.json();
+            setAnswers(data);
+            setShowAnswerModal(true); // Открываем модальное окно для просмотра ответов
+        } catch (error) {
+            console.error('Ошибка при получении ответов:', error);
         }
     };
 
@@ -33,7 +53,7 @@ const Forum = () => {
                     body: JSON.stringify({
                         title: newQuestion.title,
                         description: newQuestion.description,
-                        user_id: 1, // Предположим, что пользователь с ID 1
+                        user_id: userId, // Используем ID текущего пользователя
                     }),
                 });
                 const newQuestionFromDB = await response.json();
@@ -46,24 +66,43 @@ const Forum = () => {
         }
     };
 
-    // Закрытие модального окна при клике вне его
-    const handleOutsideClick = (event) => {
-        if (event.target.classList.contains("modal-forum")) {
-            setShowModal(false);
+    const addAnswer = async (e) => {
+        e.preventDefault();
+        if (newAnswer && selectedQuestion) {
+            try {
+                const response = await fetch(`http://localhost:5000/forums/${selectedQuestion}/answers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        answer: newAnswer,
+                        user_id: userId, // Используем ID текущего пользователя
+                        question_id: selectedQuestion,
+                    }),
+                });
+                const newAnswerFromDB = await response.json();
+                setAnswers((prev) => [...prev, newAnswerFromDB]);
+                setShowAddAnswerModal(false);
+                setNewAnswer('');
+            } catch (error) {
+                console.error('Ошибка при добавлении ответа:', error);
+            }
         }
     };
 
-    useEffect(() => {
-        if (showModal) {
-            window.addEventListener("click", handleOutsideClick);
-        } else {
-            window.removeEventListener("click", handleOutsideClick);
+    const closeQuestion = async (questionId) => {
+        try {
+            await fetch(`http://localhost:5000/forums/${questionId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'Решён' }),
+            });
+            fetchQuestions();
+        } catch (error) {
+            console.error('Ошибка при закрытии вопроса:', error);
         }
-
-        return () => {
-            window.removeEventListener("click", handleOutsideClick);
-        };
-    }, [showModal]);
+    };
 
     return (
         <div className="forum-page">
@@ -75,22 +114,37 @@ const Forum = () => {
                         Задать вопрос
                     </button>
 
-                    {/* Список вопросов */}
                     <div className="questions">
                         {questions.map((q) => (
                             <article key={q.id} className={`question ${q.status === 'Решён' ? 'resolved' : ''}`}>
-                                <h3>Тема: {q.question}</h3>
+                                <h3>Тема: {q.title}</h3>
                                 <p>Описание: {q.description}</p>
                                 <p><strong>Пользователь:</strong> {q.user}</p>
                                 <p><strong>Дата:</strong> {new Date(q.created_at).toLocaleDateString()}</p>
                                 <p><strong>Статус:</strong> {q.status}</p>
+                                
+                                <button className="btn" onClick={() => { setSelectedQuestion(q.id); fetchAnswers(q.id); }}>
+                                    Посмотреть ответы
+                                </button>
+
+                                {String(q.user_id) !== String(userId) && (
+                                    <button className="btn" onClick={() => { setSelectedQuestion(q.id); setShowAddAnswerModal(true); }}>
+                                        Ответить
+                                    </button>
+                                )}
+
+                                {(String(q.user_id) === String(userId) || userRole === 'admin') && q.status !== 'Решён' && (
+                                    <button className="btn" onClick={() => closeQuestion(q.id)}>
+                                        Закрыть вопрос
+                                    </button>
+                                )}
                             </article>
                         ))}
                     </div>
                 </section>
             </main>
 
-            {/* Модальное окно */}
+            {/* Модальное окно для добавления вопроса */}
             {showModal && (
                 <div className="modal-forum">
                     <div className="modal-content">
@@ -109,20 +163,43 @@ const Forum = () => {
                                 onChange={(e) => setNewQuestion({ ...newQuestion, description: e.target.value })}
                                 required
                             ></textarea>
-                            <button type="submit" className="btn">
-                                Отправить
-                            </button>
-                            <button type="button" className="btn cancel-btn" onClick={() => setShowModal(false)}>
-                                Отмена
-                            </button>
+                            <button type="submit" className="btn">Отправить</button>
+                            <button type="button" className="btn cancel-btn" onClick={() => setShowModal(false)}>Отмена</button>
                         </form>
                     </div>
                 </div>
             )}
 
-            <footer>
-                <p>&copy; 2024 IT-BIRD. Все права защищены.</p>
-            </footer>
+            {/* Модальное окно для просмотра ответов */}
+            {showAnswerModal && (
+                <div className="modal-forum">
+                    <div className="modal-content">
+                        <h3>Ответы</h3>
+                        {answers.map((answer) => (
+                            <p key={answer.id}><strong>{answer.user}:</strong> {answer.answer}</p>
+                        ))}
+                        <button className="btn" onClick={() => setShowAnswerModal(false)}>Закрыть</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Модальное окно для добавления ответа */}
+            {showAddAnswerModal && (
+                <div className="modal-forum">
+                    <div className="modal-content">
+                        <h3>Добавить ответ</h3>
+                        <form onSubmit={addAnswer}>
+                            <textarea
+                                value={newAnswer}
+                                onChange={(e) => setNewAnswer(e.target.value)}
+                                required
+                            ></textarea>
+                            <button type="submit" className="btn">Отправить</button>
+                            <button type="button" className="btn cancel-btn" onClick={() => setShowAddAnswerModal(false)}>Отмена</button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

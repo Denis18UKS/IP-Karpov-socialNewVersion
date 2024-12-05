@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { toast, ToastContainer } from 'react-toastify';
@@ -11,11 +11,13 @@ const Chats = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [users, setUsers] = useState([]);
-    const [filteredUsers, setFilteredUsers] = useState([]); // Состояние для отфильтрованных пользователей
-    const [searchQuery, setSearchQuery] = useState(''); // Состояние для текста поиска
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
     const [unreadMessagesCount, setUnreadMessagesCount] = useState({});
+    const [showScrollButton, setShowScrollButton] = useState(false);
     const navigate = useNavigate();
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -39,7 +41,7 @@ const Chats = () => {
                 const usersData = await response.json();
                 const filteredUsers = usersData.filter(user => user.id !== decodedToken.id);
                 setUsers(filteredUsers);
-                setFilteredUsers(filteredUsers); // Устанавливаем изначальный список пользователей
+                setFilteredUsers(filteredUsers); 
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
                 navigate('/login');
@@ -89,7 +91,6 @@ const Chats = () => {
 
                 // Если сообщение из другого чата
                 if (message.chat_id !== chatId) {
-                    // Добавляем username в уведомление, чтобы избежать undefined
                     toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
                     setUnreadMessagesCount((prevState) => ({
                         ...prevState,
@@ -97,6 +98,7 @@ const Chats = () => {
                     }));
                 } else {
                     setMessages((prevMessages) => [...prevMessages, message]);
+                    setShowScrollButton(true);  // Показываем кнопку прокрутки
                 }
             }
         };
@@ -147,7 +149,7 @@ const Chats = () => {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ chatId, message: newMessage, username: currentUser.username }), // Добавляем username
+                    body: JSON.stringify({ chatId, message: newMessage, username: currentUser.username }),
                 });
 
                 if (response.ok) {
@@ -157,12 +159,13 @@ const Chats = () => {
                         user_id: currentUser.id,
                         message: newMessage,
                         created_at: new Date().toISOString(),
-                        username: currentUser.username, // Добавляем username
+                        username: currentUser.username,
                         read: true
                     };
 
                     setMessages((prevMessages) => [...prevMessages, sentMessage]);
                     setNewMessage('');
+                    scrollToBottom();
                 } else {
                     throw new Error('Ошибка при отправке сообщения');
                 }
@@ -188,8 +191,17 @@ const Chats = () => {
         setFilteredUsers(filtered);
     };
 
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
     const getAvatarUrl = (avatar) => {
         return avatar ? `http://localhost:5000${avatar}` : '/images/default-avatar.png';
+    };
+
+    const handleScrollButtonClick = () => {
+        scrollToBottom();
+        setShowScrollButton(false);  // Скрыть кнопку после прокрутки
     };
 
     return (
@@ -235,7 +247,17 @@ const Chats = () => {
                             {message.message || 'Сообщение не найдено'}
                         </div>
                     ))}
+                    <div ref={messagesEndRef} />
                 </div>
+
+                {showScrollButton && (
+                    <button
+                        className="scroll-down-button"
+                        onClick={handleScrollButtonClick}  // Обработчик клика на кнопку
+                    >
+                        ↓
+                    </button>
+                )}
 
                 {selectedUser && (
                     <div className="chat-input-container">

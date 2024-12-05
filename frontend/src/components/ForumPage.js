@@ -156,7 +156,8 @@ const Forum = () => {
                                     </button>
                                 )}
 
-                                {(String(q.user_id) === String(userId) || userRole === 'admin') && q.status !== 'Решён' && (
+
+                                {(String(q.user_id) === String(userId)) && (
                                     <button className="btn" onClick={() => closeQuestion(q.id)}>
                                         Закрыть вопрос
                                     </button>

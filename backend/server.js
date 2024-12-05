@@ -579,6 +579,7 @@ app.get("/forums/:id/answers", async (req, res) => {
 });
 
 // Добавление нового ответа
+// Добавление нового ответа
 app.post("/forums/:id/answers", verifyToken, async (req, res) => {
     const { id } = req.params; // ID вопроса
     const { answer } = req.body;
@@ -589,10 +590,21 @@ app.post("/forums/:id/answers", verifyToken, async (req, res) => {
     }
 
     try {
+        // Проверка, является ли пользователь автором вопроса
+        const [questionOwner] = await db.query(
+            'SELECT user_id FROM forums WHERE id = ?',
+            [id]
+        );
+
+        if (!questionOwner.length || questionOwner[0].user_id === userId) {
+            return res.status(403).json({ message: "Вы не можете ответить на свой собственный вопрос." });
+        }
+
         const [result] = await db.query(
             "INSERT INTO forum_answers (forum_id, user_id, answer, created_at) VALUES (?, ?, ?, ?)",
             [id, userId, answer, new Date()]
         );
+
         const newAnswer = {
             id: result.insertId,
             forum_id: id,
@@ -600,6 +612,7 @@ app.post("/forums/:id/answers", verifyToken, async (req, res) => {
             answer,
             created_at: new Date(),
         };
+
         res.status(201).json(newAnswer);
     } catch (error) {
         console.error("Ошибка при добавлении ответа:", error);

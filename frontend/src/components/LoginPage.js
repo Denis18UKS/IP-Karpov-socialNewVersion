@@ -5,7 +5,6 @@ import './css-v2/LoginPage.css'; // Импортируем CSS файл
 const LoginPage = ({ setIsAuthenticated }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [gitHubUsername, setGitHubUsername] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate(); // Для редиректа на главную страницу или панель пользователя после авторизации
 
@@ -13,7 +12,6 @@ const LoginPage = ({ setIsAuthenticated }) => {
         e.preventDefault();
 
         try {
-            // Отправка данных на сервер для авторизации
             const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 headers: {
@@ -22,28 +20,27 @@ const LoginPage = ({ setIsAuthenticated }) => {
                 body: JSON.stringify({
                     email,
                     password,
-                    github_username: gitHubUsername,
                 }),
             });
 
             const data = await response.json();
             if (response.ok) {
-                // Сохраняем токен в localStorage для дальнейших запросов
+                // Сохраняем токен, userId и роль в localStorage
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('role', data.user.role);
 
-                // Устанавливаем флаг авторизации в родительском компоненте
                 setIsAuthenticated(true);
-                
-                // Перенаправляем пользователя на страницу профиля или на главную страницу
                 navigate('/profile');
             } else {
-                setErrorMessage(data.message); // Выводим ошибку, если авторизация не удалась
+                setErrorMessage(data.message);
             }
         } catch (err) {
             console.error(err);
             setErrorMessage('Ошибка при отправке данных на сервер.');
         }
     };
+
 
     return (
         <main>
@@ -69,7 +66,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
                     />
                     <button type="submit">Войти</button>
                 </form>
-                
+
                 {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Вывод ошибки, если есть */}
             </section>
         </main>

@@ -1,12 +1,15 @@
 /* Основной стиль для пользователей */
 .users {
-    padding: 20px; /* Отступы вокруг страницы */
-    background-color: #f8f9fa; /* Легкий фон для всей страницы */
+    padding: 20px;
+    /* Отступы вокруг страницы */
+    background-color: #f8f9fa;
+    /* Легкий фон для всей страницы */
 }
 
 /* Стили для списка пользователей */
 .users-list-page {
-    list-style-type: none; /* Убираем маркеры списка */
+    list-style-type: none;
+    /* Убираем маркеры списка */
     padding: 0;
 }
 
@@ -14,64 +17,93 @@
 .users-list-page li {
     display: flex;
     align-items: center;
-    background: linear-gradient(135deg, #ffffff, #f1f1f1); /* Градиентный фон */
+    background: linear-gradient(135deg, #ffffff, #f1f1f1);
+    /* Градиентный фон */
     padding: 20px;
     margin: 15px 0;
-    border-radius: 15px; /* Более округлые края */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Глубокая тень для объема */
-    transition: background 0.3s, transform 0.3s ease, box-shadow 0.3s; /* Плавное изменение фона и эффекта */
+    border-radius: 15px;
+    /* Более округлые края */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    /* Глубокая тень для объема */
+    transition: background 0.3s, transform 0.3s ease, box-shadow 0.3s;
+    /* Плавное изменение фона и эффекта */
 }
 
 .users-list-page li:hover {
-    background: linear-gradient(135deg, #f9f9f9, #ffffff); /* Мягкий градиент при наведении */
-    transform: translateY(-8px); /* Легкое поднятие карточки при наведении */
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); /* Более выраженная тень при наведении */
+    background: linear-gradient(135deg, #f9f9f9, #ffffff);
+    /* Мягкий градиент при наведении */
+    transform: translateY(-8px);
+    /* Легкое поднятие карточки при наведении */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    /* Более выраженная тень при наведении */
 }
 
 /* Стиль для аватаров пользователей */
 .users-list-page img {
     width: 70px;
     height: 70px;
-    border-radius: 20%; /* Круглые аватары */
+    border-radius: 20%;
+    /* Круглые аватары */
     margin-right: 20px;
-    object-fit: cover; /* Чтобы аватар всегда заполнял круг */
-    border: 3px solid #007bff; /* Обводка вокруг аватара */
-    transition: transform 0.3s ease-in-out; /* Плавное изменение при наведении */
+    object-fit: cover;
+    /* Чтобы аватар всегда заполнял круг */
+    border: 3px solid #007bff;
+    /* Обводка вокруг аватара */
+    transition: transform 0.3s ease-in-out;
+    /* Плавное изменение при наведении */
 }
 
 .users-list-page img:hover {
-    transform: scale(1.1); /* Увеличиваем аватар при наведении */
+    transform: scale(1.1);
+    /* Увеличиваем аватар при наведении */
 }
 
 /* Информация о пользователе */
 #name-and-skills {
-    flex-grow: 1; /* Занимает оставшееся пространство */
-    padding-right: 20px; /* Отступ справа */
+    flex-grow: 1;
+    /* Занимает оставшееся пространство */
+    padding-right: 20px;
+    /* Отступ справа */
 }
 
 #name-and-skills h5 {
     margin: 0;
-    color: #333; /* Темный цвет для имени */
-    font-size: 18px; /* Размер шрифта для имени */
-    font-weight: 700; /* Жирное имя */
-    transition: color 0.3s ease; /* Плавное изменение цвета */
+    color: #333;
+    /* Темный цвет для имени */
+    font-size: 18px;
+    /* Размер шрифта для имени */
+    font-weight: 700;
+    /* Жирное имя */
+    transition: color 0.3s ease;
+    /* Плавное изменение цвета */
 }
 
 #name-and-skills h5:hover {
-    color: #007bff; /* Синий цвет при наведении на имя */
+    color: #007bff;
+    /* Синий цвет при наведении на имя */
 }
 
 #name-and-skills h6 {
     margin: 5px 0 0;
-    color: #555; /* Темный цвет для дополнительных данных */
-    font-size: 14px; /* Меньший размер шрифта */
-    font-style: italic; /* Курсив для дополнительной информации */
+    color: #555;
+    /* Темный цвет для дополнительных данных */
+    font-size: 14px;
+    /* Меньший размер шрифта */
+    font-style: italic;
+    /* Курсив для дополнительной информации */
+}
+
+.scroll-down-button {
+    position: sticky;
 }
 
 /* Стили для уведомлений */
 .notification-badge {
-    background-color: #e53935; /* Красный цвет для уведомлений */
-    color: #fff; /* Белый текст для уведомлений */
+    z-index: 300;
+    background-color: #e53935;
+    /* Красный цвет для уведомлений */
+    color: #fff;
+    /* Белый текст для уведомлений */
     border-radius: 20%;
     padding: 5px 10px;
     font-size: 12px;
@@ -82,7 +114,9 @@
 }
 
 .users-list-page li:hover .notification-badge {
-    transform: scale(1.2); /* Увеличиваем уведомление при наведении */
+    z-index: 300;
+    transform: scale(1.2);
+    /* Увеличиваем уведомление при наведении */
 }
 
 /* Футер с центровкой текста */
@@ -90,5 +124,6 @@ footer {
     text-align: center;
     padding: 20px;
     font-size: 14px;
-    color: #888; /* Цвет футера */
+    color: #888;
+    /* Цвет футера */
 }

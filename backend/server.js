@@ -11,6 +11,30 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); // Добавляем модуль для работы с файловой системой
 
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 });
+
+wss.on('connection', (ws) => {
+    console.log('WebSocket клиент подключен');
+
+    ws.on('message', (message) => {
+        console.log('Получено сообщение от клиента:', message);
+    });
+
+    ws.on('close', () => {
+        console.log('WebSocket клиент отключен');
+    });
+});
+
+// WebSocket уведомление
+const notifyClients = (notification) => {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notification));
+        }
+    });
+};
+
 app.use('/uploads/avatars/', express.static(path.join(__dirname, 'uploads')));
 app.use('/github', githubRoutes);
 
@@ -57,13 +81,15 @@ const verifyToken = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        req.user = decoded;  // Добавляем декодированные данные в объект запроса
         next();
     } catch (err) {
         console.error('Неверный токен:', err);
         return res.status(401).json({ message: 'Неверный токен или токен истек' });
     }
 };
+
+
 
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -183,16 +209,24 @@ app.post('/login', async (req, res) => {
             }
         }
 
-
         // Генерация JWT
         const token = generateToken({ id: users[0].id, email: users[0].email, username: users[0].username });
 
-        res.json({ token });
+        // Возвращаем токен вместе с информацией о пользователе
+        res.json({
+            token,
+            user: {
+                id: users[0].id,
+                username: users[0].username,
+                role: users[0].role || 'user', // Убедитесь, что у вас есть поле "role" в таблице "users"
+            },
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Ошибка на сервере' });
     }
 });
+
 
 
 // Маршрут для получения профиля текущего пользователя
@@ -384,24 +418,36 @@ app.get('/chats', verifyToken, async (req, res) => {
 });
 
 
+// Пример вызова notifyClients при новом сообщении
 app.post('/messages', verifyToken, async (req, res) => {
     const { chatId, message } = req.body;
-    const { id: userId } = req.user;
-
-    if (!message || !chatId) {
-        return res.status(400).json({ message: 'Чат и сообщение обязательны' });
-    }
+    const userId = req.user.id;
 
     try {
-        // Сохранение сообщения в базе данных
-        await db.query(
-            'INSERT INTO messages (chat_id, user_id, message) VALUES (?, ?, ?)',
+        const [result] = await db.query(
+            'INSERT INTO messages (chat_id, user_id, message, created_at) VALUES (?, ?, ?, NOW())',
             [chatId, userId, message]
         );
-        res.status(201).json({ message: 'Сообщение отправлено' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Ошибка при отправке сообщения' });
+
+        const [user] = await db.query('SELECT username FROM users WHERE id = ?', [userId]);
+
+        const newMessage = {
+            id: result.insertId,
+            chat_id: chatId,
+            user_id: userId,
+            message,
+            username: user[0].username, // Имя пользователя из базы данных
+            created_at: new Date(),
+            read: false, // Предположим, что новое сообщение еще не прочитано
+        };
+
+        // Отправляем уведомление через WebSocket
+        notifyClients({ type: 'NEW_MESSAGE', data: newMessage });
+
+        res.status(201).json(newMessage);
+    } catch (error) {
+        console.error('Ошибка при добавлении сообщения:', error);
+        res.status(500).json({ message: 'Ошибка при добавлении сообщения' });
     }
 });
 
@@ -450,7 +496,6 @@ app.post('/chats', verifyToken, async (req, res) => {
     }
 });
 
-// Эндпоинт для получения репозиториев
 // Эндпоинт для получения репозиториев
 app.get('/repositories/:github_username', verifyToken, async (req, res) => {
     const { github_username } = req.params;
@@ -506,155 +551,143 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Ошибка при получении репозиториев' });
     }
 });
-// Эндпоинт для получения вопросов форума
-// Эндпоинт для получения вопросов форума
-app.get('/forums', async (req, res) => {
+
+
+// Получение всех вопросов
+app.get("/forums", async (req, res) => {
     try {
         const [forums] = await db.query(`
-            SELECT f.id, f.question, f.description, f.created_at, f.status, u.username AS user
+            SELECT f.id, f.user_id, f.question AS title, f.description, f.created_at, f.status, u.username AS user
             FROM forums f
             JOIN users u ON f.user_id = u.id
             ORDER BY f.created_at DESC
         `);
         res.status(200).json(forums);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при получении вопросов' });
+        console.error("Ошибка при получении вопросов:", error);
+        res.status(500).json({ message: "Ошибка при получении вопросов" });
     }
 });
 
 // Добавление нового вопроса
-app.post('/forums', async (req, res) => {
-    const { title, description, user_id } = req.body;
-    const createdAt = new Date();
+app.post('/forums', verifyToken, async (req, res) => {
+    const { title, description } = req.body;
+    const user_id = req.user.id;  // Берем user_id из данных токена
 
-    // Проверка обязательных полей
-    if (!title || !description) {
-        return res.status(400).json({ message: 'Тема и описание обязательны' });
+    if (!user_id) {
+        return res.status(400).json({ message: 'user_id обязателен' });
     }
 
     try {
-        // Вставка нового вопроса в базу данных
         const [result] = await db.query(
-            'INSERT INTO forums (user_id, question, description, created_at, status) VALUES (?, ?, ?, ?, ?)',
-            [user_id, title, description, createdAt, 'Открыт'] // Статус "Открыт" по умолчанию
+            'INSERT INTO forums (question, description, user_id, created_at, status) VALUES (?, ?, ?, NOW(), ?)',
+            [title, description, user_id, 'Открыт']
         );
 
-        const newQuestion = {
-            id: result.insertId,
-            user_id,
-            question: title,
-            description,
-            created_at: createdAt.toISOString(),
-            status: 'Открыт',
-        };
+        const [user] = await db.query('SELECT username FROM users WHERE id = ?', [user_id]);
 
-        // Ответ с новым вопросом
-        res.status(201).json(newQuestion);
+        res.status(201).json({
+            id: result.insertId,
+            title,
+            description,
+            user: user[0].username,  // Возвращаем имя пользователя
+            created_at: new Date(),
+            status: 'Открыт',
+            user_id,
+        });
     } catch (error) {
-        console.error(error);
+        console.error('Ошибка при добавлении вопроса:', error);
         res.status(500).json({ message: 'Ошибка при добавлении вопроса' });
     }
 });
 
-// Обновление статуса вопроса
-app.put('/forums/:id/status', verifyToken, async (req, res) => {
+
+
+// Получение ответов для вопроса
+app.get("/forums/:id/answers", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [answers] = await db.query(`
+            SELECT a.id, a.answer, a.created_at, u.username AS user
+            FROM forum_answers a
+            JOIN users u ON a.user_id = u.id
+            WHERE a.forum_id = ?
+            ORDER BY a.created_at ASC
+        `, [id]);
+        res.status(200).json(answers);
+    } catch (error) {
+        console.error("Ошибка при получении ответов:", error);
+        res.status(500).json({ message: "Ошибка при получении ответов" });
+    }
+});
+
+// Добавление нового ответа
+// Добавление нового ответа
+app.post("/forums/:id/answers", verifyToken, async (req, res) => {
     const { id } = req.params; // ID вопроса
-    const { status } = req.body; // Новый статус
+    const { answer } = req.body;
+    const userId = req.user.id;
 
-    if (!status) {
-        return res.status(400).json({ message: 'Статус обязателен' });
+    if (!answer) {
+        return res.status(400).json({ message: "Ответ не может быть пустым." });
     }
 
     try {
-        // Обновляем статус вопроса
-        const [result] = await db.query('UPDATE forums SET status = ? WHERE id = ?', [status, id]);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Вопрос не найден' });
-        }
-
-        res.status(200).json({ message: 'Статус обновлен' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при обновлении статуса вопроса' });
-    }
-});
-
-
-
-// Получение всех вопросов
-// Получение всех вопросов
-app.get('/forums', async (req, res) => {
-    try {
-        const [forums] = await db.query('SELECT * FROM forums ORDER BY created_at DESC');
-        res.status(200).json(forums);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при получении вопросов' });
-    }
-});
-
-
-// Добавление нового вопроса
-// Добавление нового вопроса
-app.post('/forums', async (req, res) => {
-    const { title, description, user_id } = req.body;
-    const createdAt = new Date();
-
-    // Проверка обязательных полей
-    if (!title || !description) {
-        return res.status(400).json({ message: 'Тема и описание обязательны' });
-    }
-
-    try {
-        // Вставка нового вопроса в базу данных
-        const [result] = await db.query(
-            'INSERT INTO forums (user_id, question, description, created_at, status) VALUES (?, ?, ?, ?, ?)',
-            [user_id, title, description, createdAt, 'Открыт'] // Статус "Открыт" по умолчанию
+        // Проверка, является ли пользователь автором вопроса
+        const [questionOwner] = await db.query(
+            'SELECT user_id FROM forums WHERE id = ?',
+            [id]
         );
 
-        const newQuestion = {
+        if (!questionOwner.length || questionOwner[0].user_id === userId) {
+            return res.status(403).json({ message: "Вы не можете ответить на свой собственный вопрос." });
+        }
+
+        const [result] = await db.query(
+            "INSERT INTO forum_answers (forum_id, user_id, answer, created_at) VALUES (?, ?, ?, ?)",
+            [id, userId, answer, new Date()]
+        );
+
+        const newAnswer = {
             id: result.insertId,
-            user_id,
-            question: title,
-            description,
-            created_at: createdAt.toISOString(),
-            status: 'Открыт',
+            forum_id: id,
+            user_id: userId,
+            answer,
+            created_at: new Date(),
         };
 
-        // Ответ с новым вопросом
-        res.status(201).json(newQuestion);
+        res.status(201).json(newAnswer);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при добавлении вопроса' });
+        console.error("Ошибка при добавлении ответа:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
 
 // Обновление статуса вопроса
-app.put('/forums/:id/status', verifyToken, async (req, res) => {
-    const { id } = req.params; // ID вопроса
-    const { status } = req.body; // Новый статус
+app.put("/forums/:id/status", verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
 
     if (!status) {
-        return res.status(400).json({ message: 'Статус обязателен' });
+        return res.status(400).json({ message: "Статус обязателен." });
     }
 
     try {
-        // Обновляем статус вопроса
-        const [result] = await db.query('UPDATE forums SET status = ? WHERE id = ?', [status, id]);
+        const [result] = await db.query(
+            "UPDATE forums SET status = ? WHERE id = ?",
+            [status, id]
+        );
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Вопрос не найден' });
+            return res.status(404).json({ message: "Вопрос не найден." });
         }
 
-        res.status(200).json({ message: 'Статус обновлен' });
+        res.status(200).json({ message: "Статус обновлен." });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при обновлении статуса вопроса' });
+        console.error("Ошибка при обновлении статуса:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
-
 
 
 // Старт сервера

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { toast, ToastContainer } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './css-v2/ChatsPage.css';
 
 const Chats = () => {
@@ -11,9 +11,13 @@ const Chats = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
     const [unreadMessagesCount, setUnreadMessagesCount] = useState({});
+    const [showScrollButton, setShowScrollButton] = useState(false);
     const navigate = useNavigate();
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -37,6 +41,7 @@ const Chats = () => {
                 const usersData = await response.json();
                 const filteredUsers = usersData.filter(user => user.id !== decodedToken.id);
                 setUsers(filteredUsers);
+                setFilteredUsers(filteredUsers); 
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
                 navigate('/login');
@@ -72,13 +77,44 @@ const Chats = () => {
         }
     }, [chatId, navigate]);
 
+    useEffect(() => {
+        const socket = new WebSocket('ws://localhost:8080');
+
+        socket.onmessage = (event) => {
+            const notification = JSON.parse(event.data);
+
+            if (notification.type === 'NEW_MESSAGE') {
+                const message = notification.data;
+
+                // Если сообщение уже есть или отправлено текущим пользователем, игнорируем
+                if (message.user_id === currentUser.id) return;
+
+                // Если сообщение из другого чата
+                if (message.chat_id !== chatId) {
+                    toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
+                    setUnreadMessagesCount((prevState) => ({
+                        ...prevState,
+                        [message.chat_id]: (prevState[message.chat_id] || 0) + 1,
+                    }));
+                } else {
+                    setMessages((prevMessages) => [...prevMessages, message]);
+                    setShowScrollButton(true);  // Показываем кнопку прокрутки
+                }
+            }
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, [chatId, currentUser]);
+
     const selectChat = (user) => {
         if (selectedUser && selectedUser.id === user.id) {
             return;
         }
 
         setSelectedUser(user);
-        setMessages([]); 
+        setMessages([]);
         setUnreadMessagesCount((prevState) => ({ ...prevState, [user.id]: 0 }));
 
         const token = localStorage.getItem("token");
@@ -113,7 +149,7 @@ const Chats = () => {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ chatId, message: newMessage }),
+                    body: JSON.stringify({ chatId, message: newMessage, username: currentUser.username }),
                 });
 
                 if (response.ok) {
@@ -124,11 +160,12 @@ const Chats = () => {
                         message: newMessage,
                         created_at: new Date().toISOString(),
                         username: currentUser.username,
-                        read: true // Помечаем сообщение как прочитанное
+                        read: true
                     };
 
                     setMessages((prevMessages) => [...prevMessages, sentMessage]);
                     setNewMessage('');
+                    scrollToBottom();
                 } else {
                     throw new Error('Ошибка при отправке сообщения');
                 }
@@ -145,33 +182,47 @@ const Chats = () => {
         }
     };
 
-    // Функция для обработки аватара
+    const handleSearchChange = (e) => {
+        const query = e.target.value.toLowerCase();
+        setSearchQuery(query);
+        const filtered = users.filter(user =>
+            user.username.toLowerCase().includes(query)
+        );
+        setFilteredUsers(filtered);
+    };
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
     const getAvatarUrl = (avatar) => {
         return avatar ? `http://localhost:5000${avatar}` : '/images/default-avatar.png';
     };
 
-    useEffect(() => {
-        if (messages.length > 0 && messages[messages.length - 1].user_id !== currentUser.id) {
-            const lastMessage = messages[messages.length - 1];
-
-            if (chatId !== lastMessage.chat_id && !lastMessage.read) {
-                toast(`Новое сообщение от ${selectedUser?.username}`);
-            }
-        }
-    }, [messages, selectedUser, chatId, currentUser]);
+    const handleScrollButtonClick = () => {
+        scrollToBottom();
+        setShowScrollButton(false);  // Скрыть кнопку после прокрутки
+    };
 
     return (
         <div className="chat-page">
-            <ToastContainer /> 
+            <ToastContainer />
 
             <aside className="user-list">
                 <h3>Пользователи</h3>
+                <input
+                    type="text"
+                    placeholder="Поиск по имени..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="search-input"
+                />
                 <ul>
-                    {users.map((user) => (
-                        <li 
-                            key={user.id} 
-                            onClick={() => selectChat(user)} 
-                            className={selectedUser && selectedUser.id === user.id ? 'active-chat' : ''} // Добавляем класс активного чата
+                    {filteredUsers.map((user) => (
+                        <li
+                            key={user.id}
+                            onClick={() => selectChat(user)}
+                            className={selectedUser && selectedUser.id === user.id ? 'active-chat' : ''}
                         >
                             <img src={getAvatarUrl(user.avatar)} alt={`${user.username} avatar`} />
                             <p>{user.username}</p>
@@ -189,13 +240,24 @@ const Chats = () => {
                 <div className="chat-header">
                     <h2>{selectedUser ? selectedUser.username : 'Выберите пользователя'}</h2>
                 </div>
+
                 <div className="chat-messages">
                     {messages.map((message) => (
                         <div key={message.id} className={message.user_id === currentUser.id ? 'message mine' : 'message'}>
-                            <strong>{message.user_id === currentUser.id ? 'Вы' : message.username}:</strong> {message.message || 'Сообщение не найдено'}
+                            {message.message || 'Сообщение не найдено'}
                         </div>
                     ))}
+                    <div ref={messagesEndRef} />
                 </div>
+
+                {showScrollButton && (
+                    <button
+                        className="scroll-down-button"
+                        onClick={handleScrollButtonClick}  // Обработчик клика на кнопку
+                    >
+                        ↓
+                    </button>
+                )}
 
                 {selectedUser && (
                     <div className="chat-input-container">

@@ -75,6 +75,9 @@ const Forum = () => {
     };
 
 
+
+
+
     const addAnswer = async (e) => {
         e.preventDefault();
         if (newAnswer && selectedQuestion) {
@@ -139,7 +142,7 @@ const Forum = () => {
                             <article key={q.id} className={`question ${q.status === 'Решён' ? 'resolved' : ''}`}>
                                 <h3>Тема: {q.title}</h3>
                                 <p>Описание: {q.description}</p>
-                                <p><strong>Пользователь:</strong> {q.user}</p>
+                                <p><strong>Пользователь:</strong> {q.user || 'Не указан'}</p>  {/* Имя пользователя */}
                                 <p><strong>Дата:</strong> {q.created_at ? new Date(q.created_at).toLocaleDateString() : 'Не указана'}</p>
                                 <p><strong>Статус:</strong> {q.status}</p>
 
@@ -160,7 +163,6 @@ const Forum = () => {
                                 )}
                             </article>
                         ))}
-
                     </div>
                 </section>
             </main>

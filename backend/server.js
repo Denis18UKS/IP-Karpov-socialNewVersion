@@ -50,19 +50,21 @@ const generateToken = (user) => {
 
 // Middleware для проверки токена
 const verifyToken = (req, res, next) => {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+    const token = req.header('Authorization')?.replace('Bearer ', '');
     if (!token) {
-        return res.status(401).json({ message: "Нет токена. Авторизация отклонена." });
+        return res.status(401).json({ message: 'Нет авторизации, токен не предоставлен' });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // Сохраняем данные пользователя в запросе
+        req.user = decoded;  // Добавляем декодированные данные в объект запроса
         next();
-    } catch (error) {
-        res.status(401).json({ message: "Неверный токен или срок действия истек." });
+    } catch (err) {
+        console.error('Неверный токен:', err);
+        return res.status(401).json({ message: 'Неверный токен или токен истек' });
     }
 };
+
 
 
 // Настройка multer для загрузки файлов
@@ -525,33 +527,38 @@ app.get("/forums", async (req, res) => {
 });
 
 // Добавление нового вопроса
-app.post("/forums", verifyToken, async (req, res) => {
+app.post('/forums', verifyToken, async (req, res) => {
     const { title, description } = req.body;
-    const userId = req.user.id;
+    const user_id = req.user.id;  // Берем user_id из данных токена
 
-    if (!title || !description) {
-        return res.status(400).json({ message: "Тема и описание обязательны." });
+    if (!user_id) {
+        return res.status(400).json({ message: 'user_id обязателен' });
     }
 
     try {
         const [result] = await db.query(
-            "INSERT INTO forums (user_id, question, description, created_at, status) VALUES (?, ?, ?, ?, ?)",
-            [userId, title, description, new Date(), "Открыт"]
+            'INSERT INTO forums (question, description, user_id, created_at, status) VALUES (?, ?, ?, NOW(), ?)',
+            [title, description, user_id, 'Открыт']
         );
-        const newQuestion = {
+
+        const [user] = await db.query('SELECT username FROM users WHERE id = ?', [user_id]);
+
+        res.status(201).json({
             id: result.insertId,
-            user_id: userId,
             title,
             description,
+            user: user[0].username,  // Возвращаем имя пользователя
             created_at: new Date(),
-            status: "Открыт",
-        };
-        res.status(201).json(newQuestion);
+            status: 'Открыт',
+            user_id,
+        });
     } catch (error) {
-        console.error("Ошибка при добавлении вопроса:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+        console.error('Ошибка при добавлении вопроса:', error);
+        res.status(500).json({ message: 'Ошибка при добавлении вопроса' });
     }
 });
+
+
 
 // Получение ответов для вопроса
 app.get("/forums/:id/answers", async (req, res) => {

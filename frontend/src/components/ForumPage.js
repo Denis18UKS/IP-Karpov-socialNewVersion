@@ -110,17 +110,23 @@ const Forum = () => {
     };
 
     const closeQuestion = async (questionId) => {
+        const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
         try {
             await fetch(`http://localhost:5000/forums/${questionId}/status`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+                },
                 body: JSON.stringify({ status: 'Решён' }),
             });
-            fetchQuestions();
+            fetchQuestions(); // Обновляем список вопросов после изменения статуса
         } catch (error) {
             console.error('Ошибка при закрытии вопроса:', error);
         }
     };
+
 
     return (
         <div className="forum-page">
@@ -137,28 +143,34 @@ const Forum = () => {
                             <article key={q.id} className={`question ${q.status === 'Решён' ? 'resolved' : ''}`}>
                                 <h3>Тема: {q.title}</h3>
                                 <p>Описание: {q.description}</p>
-                                <p><strong>Пользователь:</strong> {q.user || 'Не указан'}</p>  {/* Имя пользователя */}
+                                <p><strong>Пользователь:</strong> {q.user || 'Не указан'}</p>
                                 <p><strong>Дата:</strong> {q.created_at ? new Date(q.created_at).toLocaleDateString() : 'Не указана'}</p>
                                 <p><strong>Статус:</strong> {q.status}</p>
 
+                                {/* Кнопка "Посмотреть ответы" всегда отображается */}
                                 <button className="btn" onClick={() => { setSelectedQuestion(q.id); fetchAnswers(q.id); }}>
                                     Посмотреть ответы
                                 </button>
 
-                                {String(q.user_id) !== String(userId) && (
-                                    <button className="btn" onClick={() => { setSelectedQuestion(q.id); setShowAddAnswerModal(true); }}>
-                                        Ответить
-                                    </button>
-                                )}
-
-                                {(String(q.user_id) === String(userId)) && (
-                                    <button className="btn" onClick={() => closeQuestion(q.id)}>
-                                        Закрыть вопрос
-                                    </button>
+                                {/* Если статус НЕ "Решён", показываем кнопки "Ответить" и "Закрыть вопрос" */}
+                                {q.status !== 'Решён' && (
+                                    <>
+                                        {String(q.user_id) !== String(userId) && (
+                                            <button className="btn" onClick={() => { setSelectedQuestion(q.id); setShowAddAnswerModal(true); }}>
+                                                Ответить
+                                            </button>
+                                        )}
+                                        {String(q.user_id) === String(userId) && (
+                                            <button className="btn" onClick={() => closeQuestion(q.id)}>
+                                                Закрыть вопрос
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </article>
                         ))}
                     </div>
+
                 </section>
             </main>
 

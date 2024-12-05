@@ -50,20 +50,20 @@ const generateToken = (user) => {
 
 // Middleware для проверки токена
 const verifyToken = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
-        return res.status(401).json({ message: 'Нет авторизации, токен не предоставлен' });
+        return res.status(401).json({ message: "Нет токена. Авторизация отклонена." });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        req.user = decoded; // Сохраняем данные пользователя в запросе
         next();
-    } catch (err) {
-        console.error('Неверный токен:', err);
-        return res.status(401).json({ message: 'Неверный токен или токен истек' });
+    } catch (error) {
+        res.status(401).json({ message: "Неверный токен или срок действия истек." });
     }
 };
+
 
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -506,155 +506,125 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Ошибка при получении репозиториев' });
     }
 });
-// Эндпоинт для получения вопросов форума
-// Эндпоинт для получения вопросов форума
-app.get('/forums', async (req, res) => {
+
+
+// Получение всех вопросов
+app.get("/forums", async (req, res) => {
     try {
         const [forums] = await db.query(`
-            SELECT f.id, f.question, f.description, f.created_at, f.status, u.username AS user
+            SELECT f.id, f.user_id, f.question AS title, f.description, f.created_at, f.status, u.username AS user
             FROM forums f
             JOIN users u ON f.user_id = u.id
             ORDER BY f.created_at DESC
         `);
         res.status(200).json(forums);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при получении вопросов' });
+        console.error("Ошибка при получении вопросов:", error);
+        res.status(500).json({ message: "Ошибка при получении вопросов" });
     }
 });
 
 // Добавление нового вопроса
-app.post('/forums', async (req, res) => {
-    const { title, description, user_id } = req.body;
-    const createdAt = new Date();
+app.post("/forums", verifyToken, async (req, res) => {
+    const { title, description } = req.body;
+    const userId = req.user.id;
 
-    // Проверка обязательных полей
     if (!title || !description) {
-        return res.status(400).json({ message: 'Тема и описание обязательны' });
+        return res.status(400).json({ message: "Тема и описание обязательны." });
     }
 
     try {
-        // Вставка нового вопроса в базу данных
         const [result] = await db.query(
-            'INSERT INTO forums (user_id, question, description, created_at, status) VALUES (?, ?, ?, ?, ?)',
-            [user_id, title, description, createdAt, 'Открыт'] // Статус "Открыт" по умолчанию
+            "INSERT INTO forums (user_id, question, description, created_at, status) VALUES (?, ?, ?, ?, ?)",
+            [userId, title, description, new Date(), "Открыт"]
         );
-
         const newQuestion = {
             id: result.insertId,
-            user_id,
-            question: title,
+            user_id: userId,
+            title,
             description,
-            created_at: createdAt.toISOString(),
-            status: 'Открыт',
+            created_at: new Date(),
+            status: "Открыт",
         };
-
-        // Ответ с новым вопросом
         res.status(201).json(newQuestion);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при добавлении вопроса' });
+        console.error("Ошибка при добавлении вопроса:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+// Получение ответов для вопроса
+app.get("/forums/:id/answers", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [answers] = await db.query(`
+            SELECT a.id, a.answer, a.created_at, u.username AS user
+            FROM forum_answers a
+            JOIN users u ON a.user_id = u.id
+            WHERE a.forum_id = ?
+            ORDER BY a.created_at ASC
+        `, [id]);
+        res.status(200).json(answers);
+    } catch (error) {
+        console.error("Ошибка при получении ответов:", error);
+        res.status(500).json({ message: "Ошибка при получении ответов" });
+    }
+});
+
+// Добавление нового ответа
+app.post("/forums/:id/answers", verifyToken, async (req, res) => {
+    const { id } = req.params; // ID вопроса
+    const { answer } = req.body;
+    const userId = req.user.id;
+
+    if (!answer) {
+        return res.status(400).json({ message: "Ответ не может быть пустым." });
+    }
+
+    try {
+        const [result] = await db.query(
+            "INSERT INTO forum_answers (forum_id, user_id, answer, created_at) VALUES (?, ?, ?, ?)",
+            [id, userId, answer, new Date()]
+        );
+        const newAnswer = {
+            id: result.insertId,
+            forum_id: id,
+            user_id: userId,
+            answer,
+            created_at: new Date(),
+        };
+        res.status(201).json(newAnswer);
+    } catch (error) {
+        console.error("Ошибка при добавлении ответа:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
 
 // Обновление статуса вопроса
-app.put('/forums/:id/status', verifyToken, async (req, res) => {
-    const { id } = req.params; // ID вопроса
-    const { status } = req.body; // Новый статус
+app.put("/forums/:id/status", verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
 
     if (!status) {
-        return res.status(400).json({ message: 'Статус обязателен' });
+        return res.status(400).json({ message: "Статус обязателен." });
     }
 
     try {
-        // Обновляем статус вопроса
-        const [result] = await db.query('UPDATE forums SET status = ? WHERE id = ?', [status, id]);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Вопрос не найден' });
-        }
-
-        res.status(200).json({ message: 'Статус обновлен' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при обновлении статуса вопроса' });
-    }
-});
-
-
-
-// Получение всех вопросов
-// Получение всех вопросов
-app.get('/forums', async (req, res) => {
-    try {
-        const [forums] = await db.query('SELECT * FROM forums ORDER BY created_at DESC');
-        res.status(200).json(forums);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при получении вопросов' });
-    }
-});
-
-
-// Добавление нового вопроса
-// Добавление нового вопроса
-app.post('/forums', async (req, res) => {
-    const { title, description, user_id } = req.body;
-    const createdAt = new Date();
-
-    // Проверка обязательных полей
-    if (!title || !description) {
-        return res.status(400).json({ message: 'Тема и описание обязательны' });
-    }
-
-    try {
-        // Вставка нового вопроса в базу данных
         const [result] = await db.query(
-            'INSERT INTO forums (user_id, question, description, created_at, status) VALUES (?, ?, ?, ?, ?)',
-            [user_id, title, description, createdAt, 'Открыт'] // Статус "Открыт" по умолчанию
+            "UPDATE forums SET status = ? WHERE id = ?",
+            [status, id]
         );
 
-        const newQuestion = {
-            id: result.insertId,
-            user_id,
-            question: title,
-            description,
-            created_at: createdAt.toISOString(),
-            status: 'Открыт',
-        };
-
-        // Ответ с новым вопросом
-        res.status(201).json(newQuestion);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при добавлении вопроса' });
-    }
-});
-
-// Обновление статуса вопроса
-app.put('/forums/:id/status', verifyToken, async (req, res) => {
-    const { id } = req.params; // ID вопроса
-    const { status } = req.body; // Новый статус
-
-    if (!status) {
-        return res.status(400).json({ message: 'Статус обязателен' });
-    }
-
-    try {
-        // Обновляем статус вопроса
-        const [result] = await db.query('UPDATE forums SET status = ? WHERE id = ?', [status, id]);
-
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Вопрос не найден' });
+            return res.status(404).json({ message: "Вопрос не найден." });
         }
 
-        res.status(200).json({ message: 'Статус обновлен' });
+        res.status(200).json({ message: "Статус обновлен." });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Ошибка при обновлении статуса вопроса' });
+        console.error("Ошибка при обновлении статуса:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
-
 
 
 // Старт сервера

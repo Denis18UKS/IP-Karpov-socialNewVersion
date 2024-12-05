@@ -192,7 +192,7 @@ const Chats = () => {
                 <div className="chat-messages">
                     {messages.map((message) => (
                         <div key={message.id} className={message.user_id === currentUser.id ? 'message mine' : 'message'}>
-                            <strong>{message.user_id === currentUser.id ? 'Вы' : message.username}:</strong> {message.message || 'Сообщение не найдено'}
+                            {message.message || 'Сообщение не найдено'}
                         </div>
                     ))}
                 </div>

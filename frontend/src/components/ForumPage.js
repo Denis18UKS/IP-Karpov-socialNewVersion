@@ -70,10 +70,15 @@ const Forum = () => {
         e.preventDefault();
         if (newAnswer && selectedQuestion) {
             try {
+                // Получаем токен из localStorage
+                const token = localStorage.getItem('token');
+
+                // Отправляем запрос с токеном в заголовке
                 const response = await fetch(`http://localhost:5000/forums/${selectedQuestion}/answers`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,  // Добавляем токен в заголовок
                     },
                     body: JSON.stringify({
                         answer: newAnswer,
@@ -81,15 +86,21 @@ const Forum = () => {
                         question_id: selectedQuestion,
                     }),
                 });
+
                 const newAnswerFromDB = await response.json();
-                setAnswers((prev) => [...prev, newAnswerFromDB]);
-                setShowAddAnswerModal(false);
-                setNewAnswer('');
+                if (response.ok) {
+                    setAnswers((prev) => [...prev, newAnswerFromDB]);
+                    setShowAddAnswerModal(false);
+                    setNewAnswer('');
+                } else {
+                    console.error('Ошибка при добавлении ответа:', newAnswerFromDB.message);
+                }
             } catch (error) {
                 console.error('Ошибка при добавлении ответа:', error);
             }
         }
     };
+
 
     const closeQuestion = async (questionId) => {
         try {
@@ -122,7 +133,7 @@ const Forum = () => {
                                 <p><strong>Пользователь:</strong> {q.user}</p>
                                 <p><strong>Дата:</strong> {new Date(q.created_at).toLocaleDateString()}</p>
                                 <p><strong>Статус:</strong> {q.status}</p>
-                                
+
                                 <button className="btn" onClick={() => { setSelectedQuestion(q.id); fetchAnswers(q.id); }}>
                                     Посмотреть ответы
                                 </button>

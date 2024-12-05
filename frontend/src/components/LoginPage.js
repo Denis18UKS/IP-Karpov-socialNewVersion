@@ -5,7 +5,6 @@ import './css-v2/LoginPage.css'; // Импортируем CSS файл
 const LoginPage = ({ setIsAuthenticated }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [gitHubUsername, setGitHubUsername] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate(); // Для редиректа на главную страницу или панель пользователя после авторизации
 
@@ -21,8 +20,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
                 },
                 body: JSON.stringify({
                     email,
-                    password,
-                    github_username: gitHubUsername,
+                    password, // Используем только email и password для авторизации
                 }),
             });
 
@@ -30,12 +28,11 @@ const LoginPage = ({ setIsAuthenticated }) => {
             if (response.ok) {
                 // Сохраняем токен в localStorage для дальнейших запросов
                 localStorage.setItem('token', data.token);
-
                 // Устанавливаем флаг авторизации в родительском компоненте
                 setIsAuthenticated(true);
                 
                 // Перенаправляем пользователя на страницу профиля или на главную страницу
-                navigate('/profile');
+                navigate('/profile'); // Редирект на профиль после авторизации
             } else {
                 setErrorMessage(data.message); // Выводим ошибку, если авторизация не удалась
             }

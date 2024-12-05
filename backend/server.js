@@ -11,6 +11,30 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); // Добавляем модуль для работы с файловой системой
 
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 });
+
+wss.on('connection', (ws) => {
+    console.log('WebSocket клиент подключен');
+
+    ws.on('message', (message) => {
+        console.log('Получено сообщение от клиента:', message);
+    });
+
+    ws.on('close', () => {
+        console.log('WebSocket клиент отключен');
+    });
+});
+
+// WebSocket уведомление
+const notifyClients = (notification) => {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notification));
+        }
+    });
+};
+
 app.use('/uploads/avatars/', express.static(path.join(__dirname, 'uploads')));
 app.use('/github', githubRoutes);
 
@@ -394,24 +418,36 @@ app.get('/chats', verifyToken, async (req, res) => {
 });
 
 
+// Пример вызова notifyClients при новом сообщении
 app.post('/messages', verifyToken, async (req, res) => {
     const { chatId, message } = req.body;
-    const { id: userId } = req.user;
-
-    if (!message || !chatId) {
-        return res.status(400).json({ message: 'Чат и сообщение обязательны' });
-    }
+    const userId = req.user.id;
 
     try {
-        // Сохранение сообщения в базе данных
-        await db.query(
-            'INSERT INTO messages (chat_id, user_id, message) VALUES (?, ?, ?)',
+        const [result] = await db.query(
+            'INSERT INTO messages (chat_id, user_id, message, created_at) VALUES (?, ?, ?, NOW())',
             [chatId, userId, message]
         );
-        res.status(201).json({ message: 'Сообщение отправлено' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Ошибка при отправке сообщения' });
+
+        const [user] = await db.query('SELECT username FROM users WHERE id = ?', [userId]);
+
+        const newMessage = {
+            id: result.insertId,
+            chat_id: chatId,
+            user_id: userId,
+            message,
+            username: user[0].username, // Имя пользователя из базы данных
+            created_at: new Date(),
+            read: false, // Предположим, что новое сообщение еще не прочитано
+        };
+
+        // Отправляем уведомление через WebSocket
+        notifyClients({ type: 'NEW_MESSAGE', data: newMessage });
+
+        res.status(201).json(newMessage);
+    } catch (error) {
+        console.error('Ошибка при добавлении сообщения:', error);
+        res.status(500).json({ message: 'Ошибка при добавлении сообщения' });
     }
 });
 

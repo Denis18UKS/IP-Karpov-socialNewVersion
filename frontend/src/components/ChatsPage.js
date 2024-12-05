@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { toast, ToastContainer } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './css-v2/ChatsPage.css';
 
 const Chats = () => {
@@ -72,13 +72,45 @@ const Chats = () => {
         }
     }, [chatId, navigate]);
 
+    useEffect(() => {
+        const socket = new WebSocket('ws://localhost:8080');
+
+        socket.onmessage = (event) => {
+            const notification = JSON.parse(event.data);
+
+            if (notification.type === 'NEW_MESSAGE') {
+                const message = notification.data;
+
+                // Если сообщение уже есть или отправлено текущим пользователем, игнорируем
+                if (message.user_id === currentUser.id) return;
+
+                // Если сообщение из другого чата
+                if (message.chat_id !== chatId) {
+                    // Добавляем username в уведомление, чтобы избежать undefined
+                    toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
+                    setUnreadMessagesCount((prevState) => ({
+                        ...prevState,
+                        [message.chat_id]: (prevState[message.chat_id] || 0) + 1,
+                    }));
+                } else {
+                    setMessages((prevMessages) => [...prevMessages, message]);
+                }
+            }
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, [chatId, currentUser]);
+
+
     const selectChat = (user) => {
         if (selectedUser && selectedUser.id === user.id) {
             return;
         }
 
         setSelectedUser(user);
-        setMessages([]); 
+        setMessages([]);
         setUnreadMessagesCount((prevState) => ({ ...prevState, [user.id]: 0 }));
 
         const token = localStorage.getItem("token");
@@ -113,7 +145,7 @@ const Chats = () => {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ chatId, message: newMessage }),
+                    body: JSON.stringify({ chatId, message: newMessage, username: currentUser.username }), // Добавляем username
                 });
 
                 if (response.ok) {
@@ -123,8 +155,8 @@ const Chats = () => {
                         user_id: currentUser.id,
                         message: newMessage,
                         created_at: new Date().toISOString(),
-                        username: currentUser.username,
-                        read: true // Помечаем сообщение как прочитанное
+                        username: currentUser.username, // Добавляем username
+                        read: true
                     };
 
                     setMessages((prevMessages) => [...prevMessages, sentMessage]);
@@ -138,6 +170,7 @@ const Chats = () => {
         }
     };
 
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -145,33 +178,22 @@ const Chats = () => {
         }
     };
 
-    // Функция для обработки аватара
     const getAvatarUrl = (avatar) => {
         return avatar ? `http://localhost:5000${avatar}` : '/images/default-avatar.png';
     };
 
-    useEffect(() => {
-        if (messages.length > 0 && messages[messages.length - 1].user_id !== currentUser.id) {
-            const lastMessage = messages[messages.length - 1];
-
-            if (chatId !== lastMessage.chat_id && !lastMessage.read) {
-                toast(`Новое сообщение от ${selectedUser?.username}`);
-            }
-        }
-    }, [messages, selectedUser, chatId, currentUser]);
-
     return (
         <div className="chat-page">
-            <ToastContainer /> 
+            <ToastContainer />
 
             <aside className="user-list">
                 <h3>Пользователи</h3>
                 <ul>
                     {users.map((user) => (
-                        <li 
-                            key={user.id} 
-                            onClick={() => selectChat(user)} 
-                            className={selectedUser && selectedUser.id === user.id ? 'active-chat' : ''} // Добавляем класс активного чата
+                        <li
+                            key={user.id}
+                            onClick={() => selectChat(user)}
+                            className={selectedUser && selectedUser.id === user.id ? 'active-chat' : ''}
                         >
                             <img src={getAvatarUrl(user.avatar)} alt={`${user.username} avatar`} />
                             <p>{user.username}</p>
@@ -189,6 +211,7 @@ const Chats = () => {
                 <div className="chat-header">
                     <h2>{selectedUser ? selectedUser.username : 'Выберите пользователя'}</h2>
                 </div>
+
                 <div className="chat-messages">
                     {messages.map((message) => (
                         <div key={message.id} className={message.user_id === currentUser.id ? 'message mine' : 'message'}>

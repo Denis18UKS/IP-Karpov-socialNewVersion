@@ -132,6 +132,7 @@ footer {
 }
 
 .notification-badge {
+    z-index: 300;
     background-color: red;
     color: white;
     border-radius: 20%;
@@ -141,6 +142,34 @@ footer {
     right: -10px;
     font-weight: bold;
     animation: shake 0.5s ease-in-out infinite alternate;
+}
+
+.scroll-to-bottom-icon {
+    background-color: #ff77b7;
+    /* Нежный розовый цвет */
+    color: white;
+    /* Белый цвет для стрелки */
+    border-radius: 50%;
+    /* Круглая форма */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    /* Размер стрелки */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Легкая тень для глубины */
+    transition: background-color 0.3s, transform 0.3s;
+    /* Плавные переходы */
+}
+
+.scroll-to-bottom-icon:hover {
+    background-color: #ff5ca5;
+    /* Более темный розовый при наведении */
+    transform: scale(1.1);
+    /* Увеличение кнопки при наведении */
 }
 
 @keyframes shake {
@@ -199,6 +228,7 @@ footer {
     }
 
     .notification-badge {
+        z-index: 300;
         top: -5px;
         right: -5px;
     }

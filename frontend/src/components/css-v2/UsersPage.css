@@ -70,6 +70,7 @@
 
 /* Стили для уведомлений */
 .notification-badge {
+    z-index: 300;
     background-color: #e53935; /* Красный цвет для уведомлений */
     color: #fff; /* Белый текст для уведомлений */
     border-radius: 20%;
@@ -82,6 +83,7 @@
 }
 
 .users-list-page li:hover .notification-badge {
+    z-index: 300;
     transform: scale(1.2); /* Увеличиваем уведомление при наведении */
 }
 

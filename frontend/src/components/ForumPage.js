@@ -45,10 +45,13 @@ const Forum = () => {
         e.preventDefault();
         if (newQuestion.title && newQuestion.description) {
             try {
+                const token = localStorage.getItem('token'); // Получаем токен из localStorage
+
                 const response = await fetch('http://localhost:5000/forums', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,  // Отправляем токен в заголовке
                     },
                     body: JSON.stringify({
                         title: newQuestion.title,
@@ -56,15 +59,21 @@ const Forum = () => {
                         user_id: userId, // Используем ID текущего пользователя
                     }),
                 });
+
                 const newQuestionFromDB = await response.json();
-                setQuestions((prev) => [...prev, newQuestionFromDB]);
-                setShowModal(false);
-                setNewQuestion({ title: '', description: '' });
+                if (response.ok) {
+                    setQuestions((prev) => [...prev, newQuestionFromDB]);
+                    setShowModal(false);
+                    setNewQuestion({ title: '', description: '' });
+                } else {
+                    console.error('Ошибка при добавлении вопроса:', newQuestionFromDB.message);
+                }
             } catch (error) {
                 console.error('Ошибка при добавлении вопроса:', error);
             }
         }
     };
+
 
     const addAnswer = async (e) => {
         e.preventDefault();
@@ -131,7 +140,7 @@ const Forum = () => {
                                 <h3>Тема: {q.title}</h3>
                                 <p>Описание: {q.description}</p>
                                 <p><strong>Пользователь:</strong> {q.user}</p>
-                                <p><strong>Дата:</strong> {new Date(q.created_at).toLocaleDateString()}</p>
+                                <p><strong>Дата:</strong> {q.created_at ? new Date(q.created_at).toLocaleDateString() : 'Не указана'}</p>
                                 <p><strong>Статус:</strong> {q.status}</p>
 
                                 <button className="btn" onClick={() => { setSelectedQuestion(q.id); fetchAnswers(q.id); }}>
@@ -151,6 +160,7 @@ const Forum = () => {
                                 )}
                             </article>
                         ))}
+
                     </div>
                 </section>
             </main>

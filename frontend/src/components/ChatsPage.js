@@ -11,6 +11,8 @@ const Chats = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]); // Состояние для отфильтрованных пользователей
+    const [searchQuery, setSearchQuery] = useState(''); // Состояние для текста поиска
     const [currentUser, setCurrentUser] = useState(null);
     const [unreadMessagesCount, setUnreadMessagesCount] = useState({});
     const navigate = useNavigate();
@@ -37,6 +39,7 @@ const Chats = () => {
                 const usersData = await response.json();
                 const filteredUsers = usersData.filter(user => user.id !== decodedToken.id);
                 setUsers(filteredUsers);
+                setFilteredUsers(filteredUsers); // Устанавливаем изначальный список пользователей
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
                 navigate('/login');
@@ -102,7 +105,6 @@ const Chats = () => {
             socket.close();
         };
     }, [chatId, currentUser]);
-
 
     const selectChat = (user) => {
         if (selectedUser && selectedUser.id === user.id) {
@@ -170,12 +172,20 @@ const Chats = () => {
         }
     };
 
-
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             sendMessage();
         }
+    };
+
+    const handleSearchChange = (e) => {
+        const query = e.target.value.toLowerCase();
+        setSearchQuery(query);
+        const filtered = users.filter(user =>
+            user.username.toLowerCase().includes(query)
+        );
+        setFilteredUsers(filtered);
     };
 
     const getAvatarUrl = (avatar) => {
@@ -188,8 +198,15 @@ const Chats = () => {
 
             <aside className="user-list">
                 <h3>Пользователи</h3>
+                <input
+                    type="text"
+                    placeholder="Поиск по имени..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="search-input"
+                />
                 <ul>
-                    {users.map((user) => (
+                    {filteredUsers.map((user) => (
                         <li
                             key={user.id}
                             onClick={() => selectChat(user)}

@@ -12,7 +12,6 @@ const LoginPage = ({ setIsAuthenticated }) => {
         e.preventDefault();
 
         try {
-            // Отправка данных на сервер для авторизации
             const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 headers: {
@@ -20,27 +19,28 @@ const LoginPage = ({ setIsAuthenticated }) => {
                 },
                 body: JSON.stringify({
                     email,
-                    password, // Используем только email и password для авторизации
+                    password,
                 }),
             });
 
             const data = await response.json();
             if (response.ok) {
-                // Сохраняем токен в localStorage для дальнейших запросов
+                // Сохраняем токен, userId и роль в localStorage
                 localStorage.setItem('token', data.token);
-                // Устанавливаем флаг авторизации в родительском компоненте
+                localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('role', data.user.role);
+
                 setIsAuthenticated(true);
-                
-                // Перенаправляем пользователя на страницу профиля или на главную страницу
-                navigate('/profile'); // Редирект на профиль после авторизации
+                navigate('/profile');
             } else {
-                setErrorMessage(data.message); // Выводим ошибку, если авторизация не удалась
+                setErrorMessage(data.message);
             }
         } catch (err) {
             console.error(err);
             setErrorMessage('Ошибка при отправке данных на сервер.');
         }
     };
+
 
     return (
         <main>
@@ -66,7 +66,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
                     />
                     <button type="submit">Войти</button>
                 </form>
-                
+
                 {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Вывод ошибки, если есть */}
             </section>
         </main>

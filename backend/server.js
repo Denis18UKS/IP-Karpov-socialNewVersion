@@ -185,16 +185,24 @@ app.post('/login', async (req, res) => {
             }
         }
 
-
         // Генерация JWT
         const token = generateToken({ id: users[0].id, email: users[0].email, username: users[0].username });
 
-        res.json({ token });
+        // Возвращаем токен вместе с информацией о пользователе
+        res.json({
+            token,
+            user: {
+                id: users[0].id,
+                username: users[0].username,
+                role: users[0].role || 'user', // Убедитесь, что у вас есть поле "role" в таблице "users"
+            },
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Ошибка на сервере' });
     }
 });
+
 
 
 // Маршрут для получения профиля текущего пользователя
@@ -452,7 +460,6 @@ app.post('/chats', verifyToken, async (req, res) => {
     }
 });
 
-// Эндпоинт для получения репозиториев
 // Эндпоинт для получения репозиториев
 app.get('/repositories/:github_username', verifyToken, async (req, res) => {
     const { github_username } = req.params;

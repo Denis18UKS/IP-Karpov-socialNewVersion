@@ -38,6 +38,8 @@ const Forum = () => {
     };
 
     useEffect(() => {
+        console.log('User ID:', userId);
+        console.log('User Role:', userRole);
         fetchQuestions();
     }, []);
 
@@ -74,18 +76,12 @@ const Forum = () => {
         }
     };
 
-
-
-
-
     const addAnswer = async (e) => {
         e.preventDefault();
         if (newAnswer && selectedQuestion) {
             try {
-                // Получаем токен из localStorage
                 const token = localStorage.getItem('token');
 
-                // Отправляем запрос с токеном в заголовке
                 const response = await fetch(`http://localhost:5000/forums/${selectedQuestion}/answers`, {
                     method: 'POST',
                     headers: {
@@ -112,7 +108,6 @@ const Forum = () => {
             }
         }
     };
-
 
     const closeQuestion = async (questionId) => {
         try {
@@ -155,7 +150,6 @@ const Forum = () => {
                                         Ответить
                                     </button>
                                 )}
-
 
                                 {(String(q.user_id) === String(userId)) && (
                                     <button className="btn" onClick={() => closeQuestion(q.id)}>

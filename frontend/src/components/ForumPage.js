@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './css-v2/ForumPage.css'; // Импортируем CSS файл
 
 const Forum = () => {
@@ -127,6 +127,31 @@ const Forum = () => {
         }
     };
 
+    // useRef для модальных окон
+    const modalRef = useRef();
+    const answerModalRef = useRef();
+    const addAnswerModalRef = useRef();
+
+    // Закрытие модального окна при клике вне его
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (modalRef.current && !modalRef.current.contains(e.target)) {
+                setShowModal(false);
+            }
+            if (answerModalRef.current && !answerModalRef.current.contains(e.target)) {
+                setShowAnswerModal(false);
+            }
+            if (addAnswerModalRef.current && !addAnswerModalRef.current.contains(e.target)) {
+                setShowAddAnswerModal(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="forum-page">
@@ -176,7 +201,7 @@ const Forum = () => {
 
             {/* Модальное окно для добавления вопроса */}
             {showModal && (
-                <div className="modal-forum">
+                <div className="modal-forum" ref={modalRef}>
                     <div className="modal-content">
                         <h3>Задать вопрос</h3>
                         <form onSubmit={addQuestion}>
@@ -202,7 +227,7 @@ const Forum = () => {
 
             {/* Модальное окно для просмотра ответов */}
             {showAnswerModal && (
-                <div className="modal-forum">
+                <div className="modal-forum" ref={answerModalRef}>
                     <div className="modal-content">
                         <h3>Ответы</h3>
                         {answers.length === 0 ? (
@@ -217,10 +242,9 @@ const Forum = () => {
                 </div>
             )}
 
-
             {/* Модальное окно для добавления ответа */}
             {showAddAnswerModal && (
-                <div className="modal-forum">
+                <div className="modal-forum" ref={addAnswerModalRef}>
                     <div className="modal-content">
                         <h3>Добавить ответ</h3>
                         <form onSubmit={addAnswer}>

@@ -205,13 +205,18 @@ const Forum = () => {
                 <div className="modal-forum">
                     <div className="modal-content">
                         <h3>Ответы</h3>
-                        {answers.map((answer) => (
-                            <p key={answer.id}><strong>{answer.user}:</strong> {answer.answer}</p>
-                        ))}
+                        {answers.length === 0 ? (
+                            <p>Нет ответов</p>  // Если нет ответов, показываем это сообщение
+                        ) : (
+                            answers.map((answer) => (
+                                <p key={answer.id}><strong>{answer.user}:</strong> {answer.answer}</p>
+                            ))
+                        )}
                         <button className="btn" onClick={() => setShowAnswerModal(false)}>Закрыть</button>
                     </div>
                 </div>
             )}
+
 
             {/* Модальное окно для добавления ответа */}
             {showAddAnswerModal && (

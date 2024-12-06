@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const HackathonsPage = () => {
-    const [hackathons, setHackathons] = useState([]);
+    const [htmlContent, setHtmlContent] = useState('');
+    const [cssLinks, setCssLinks] = useState([]);
+    const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const parseHackathons = async () => {
+    const fetchHackathons = async () => {
         try {
-            // Запрос на сервер, который использует Puppeteer для парсинга
             const response = await axios.get("http://localhost:5000/hackathons");
-            setHackathons(response.data);
+            setHtmlContent(response.data.html); // HTML контент
+            setCssLinks(response.data.css); // CSS стили
+            setImages(response.data.images); // Ссылки на изображения
         } catch (err) {
             setError("Ошибка при загрузке хакатонов. Попробуйте позже.");
             console.error("Ошибка парсинга:", err);
@@ -20,7 +23,7 @@ const HackathonsPage = () => {
     };
 
     useEffect(() => {
-        parseHackathons();
+        fetchHackathons();
     }, []);
 
     if (loading) {
@@ -34,29 +37,16 @@ const HackathonsPage = () => {
     return (
         <div>
             <h1>Список хакатонов</h1>
-            {hackathons.length === 0 ? (
-                <p>Нет доступных хакатонов</p>
-            ) : (
-                <ul>
-                    {hackathons.map((hackathon, index) => (
-                        <li key={index}>
-                            <h2>{hackathon.title}</h2>
-                            <p>{hackathon.description}</p>
-                            <p>{hackathon.date}</p>
-                            <p>{hackathon.location}</p>
-                            {hackathon.link && (
-                                <a
-                                    href={hackathon.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Подробнее
-                                </a>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            )}
+            {/* Подключаем стили */}
+            {cssLinks.map((link, index) => (
+                <link key={index} rel="stylesheet" href={link} />
+            ))}
+            {/* Подключаем изображения */}
+            {images.map((src, index) => (
+                <img key={index} src={src} alt={`Hackathon Image ${index}`} style={{ display: 'none' }} />
+            ))}
+            {/* Выводим HTML-контент */}
+            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
         </div>
     );
 };

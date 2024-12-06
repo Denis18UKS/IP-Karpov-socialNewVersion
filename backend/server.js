@@ -105,33 +105,42 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Новый маршрут для парсинга хакатонов
 app.get('/hackathons', async (req, res) => {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
-    // Перейдите на страницу с хакатонами
-    await page.goto('https://www.xn--80aa3anexr8c.xn--p1ai/', { waitUntil: 'networkidle0' });
+    try {
+        await page.goto('https://hackathons.pro/', { waitUntil: 'networkidle0', timeout: 60000 });
 
-    const hackathons = await page.evaluate(() => {
-        const events = [];
-        document.querySelectorAll('.event-card').forEach(card => {
-            const title = card.querySelector('.event-title')?.innerText;
-            const description = card.querySelector('.event-description')?.innerText;
-            const date = card.querySelector('.event-date')?.innerText;
-            const location = card.querySelector('.event-location')?.innerText;
-            const link = card.querySelector('a')?.href;
-
-            if (title && description && date && link) {
-                events.push({ title, description, date, location, link });
-            }
+        // Извлекаем HTML блока с хакатонами
+        const htmlContent = await page.evaluate(() => {
+            const block = document.querySelector('.js-feed.t-feed.t-feed_col');
+            return block ? block.outerHTML : null;
         });
-        return events;
-    });
 
-    await browser.close();
+        // Извлекаем ссылки на изображения
+        const imageLinks = await page.evaluate(() => {
+            const images = Array.from(document.querySelectorAll('.js-feed.t-feed.t-feed_col img'));
+            return images.map(img => img.src); // Возвращаем ссылки на изображения
+        });
 
-    res.json(hackathons);
+        // Извлекаем ссылки на CSS стили
+        const cssContent = await page.evaluate(() => {
+            const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+            return styles.map(style => style.href); // Возвращаем ссылки на CSS
+        });
+
+        if (!htmlContent) {
+            res.status(404).json({ message: 'Блок с хакатонами не найден.' });
+        } else {
+            res.json({ html: htmlContent, css: cssContent, images: imageLinks });
+        }
+    } catch (err) {
+        console.error('Ошибка при парсинге:', err);
+        res.status(500).json({ message: 'Ошибка при загрузке данных' });
+    } finally {
+        await browser.close();
+    }
 });
 
 // Регистрация пользователя

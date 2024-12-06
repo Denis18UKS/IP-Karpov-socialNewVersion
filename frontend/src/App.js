@@ -34,8 +34,6 @@ function App() {
       <Header
         isAuthenticated={isAuthenticated}
         setIsAuthenticated={setIsAuthenticated}
-        toggleTheme={toggleTheme}
-        isDarkTheme={isDarkTheme}
       />
       <Routes>
         <Route path="/" element={<HomePage />} />

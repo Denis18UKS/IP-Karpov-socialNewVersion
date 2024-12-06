@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './components/Homepage';
 import LoginPage from './components/LoginPage';
@@ -15,6 +15,14 @@ import EditProfilePage from './components/EditProfilePage';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+
+  useEffect(() => {
+    // Проверяем наличие токена в localStorage при старте приложения
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true); // Если токен найден, считаем, что пользователь авторизован
+    }
+  }, []); // Пустой массив зависимостей, чтобы выполнить только при монтировании компонента
 
   const toggleTheme = () => {
     setIsDarkTheme(!isDarkTheme);

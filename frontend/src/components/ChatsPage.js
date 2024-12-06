@@ -7,8 +7,14 @@ import './css-v2/ChatsPage.css';
 
 const Chats = () => {
     const { chatId } = useParams();
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [messages, setMessages] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(() => {
+        const savedUser = localStorage.getItem('selectedUser');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+    const [messages, setMessages] = useState(() => {
+        const savedMessages = localStorage.getItem('messages');
+        return savedMessages ? JSON.parse(savedMessages) : [];
+    });
     const [newMessage, setNewMessage] = useState('');
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -41,7 +47,7 @@ const Chats = () => {
                 const usersData = await response.json();
                 const filteredUsers = usersData.filter(user => user.id !== decodedToken.id);
                 setUsers(filteredUsers);
-                setFilteredUsers(filteredUsers); 
+                setFilteredUsers(filteredUsers);
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
                 navigate('/login');
@@ -97,7 +103,11 @@ const Chats = () => {
                         [message.chat_id]: (prevState[message.chat_id] || 0) + 1,
                     }));
                 } else {
-                    setMessages((prevMessages) => [...prevMessages, message]);
+                    setMessages((prevMessages) => {
+                        const newMessages = [...prevMessages, message];
+                        localStorage.setItem('messages', JSON.stringify(newMessages));
+                        return newMessages;
+                    });
                     setShowScrollButton(true);  // Показываем кнопку прокрутки
                 }
             }
@@ -116,6 +126,9 @@ const Chats = () => {
         setSelectedUser(user);
         setMessages([]);
         setUnreadMessagesCount((prevState) => ({ ...prevState, [user.id]: 0 }));
+
+        // Сохраняем выбранного пользователя в localStorage
+        localStorage.setItem('selectedUser', JSON.stringify(user));
 
         const token = localStorage.getItem("token");
         if (!token) return;
@@ -163,7 +176,11 @@ const Chats = () => {
                         read: true
                     };
 
-                    setMessages((prevMessages) => [...prevMessages, sentMessage]);
+                    setMessages((prevMessages) => {
+                        const updatedMessages = [...prevMessages, sentMessage];
+                        localStorage.setItem('messages', JSON.stringify(updatedMessages));  // Сохраняем сообщения
+                        return updatedMessages;
+                    });
                     setNewMessage('');
                     scrollToBottom();
                 } else {

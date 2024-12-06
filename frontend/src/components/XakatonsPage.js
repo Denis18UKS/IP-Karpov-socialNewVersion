@@ -27,7 +27,11 @@ const HackathonsPage = () => {
     }, []);
 
     if (loading) {
-        return <p>Загрузка хакатонов...</p>;
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+            </div>
+        );
     }
 
     if (error) {

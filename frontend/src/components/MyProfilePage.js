@@ -272,7 +272,64 @@ const MyProfilePage = () => {
                             &times;
                         </span>
                         <h2>Репозиторий: {selectedRepo}</h2>
-                        {/* Ваши модальные данные */}
+                        {modalType === "commits" && (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Автор</th>
+                                        <th>Сообщение</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {commits.length > 0 ? (
+                                        commits.map((commit, index) => (
+                                            <tr key={index}>
+                                                <td>{commit.commit.author.name}</td>
+                                                <td>{commit.commit.message}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="2">Коммитов не найдено</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                        {modalType === "files" && (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Имя файла</th>
+                                        <th>Тип</th>
+                                        <th>Ссылка</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {branches.length > 0 ? (
+                                        branches.map((file) => (
+                                            <tr key={file.sha}>
+                                                <td>{file.name}</td>
+                                                <td>{file.type}</td>
+                                                <td>
+                                                    {file.type === 'file' ? (
+                                                        <a href={file.download_url} target="_blank" rel="noopener noreferrer">
+                                                            Скачать
+                                                        </a>
+                                                    ) : (
+                                                        <span>Папка</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">Файлов не найдено</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             )}

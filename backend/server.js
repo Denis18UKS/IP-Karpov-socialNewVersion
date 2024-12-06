@@ -4,6 +4,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 require("dotenv").config();
+
+const puppeteer = require("puppeteer");
 const axios = require("axios");
 const app = express();
 const githubRoutes = require('./routes/github');
@@ -102,6 +104,74 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+app.get('/hackathons', async (req, res) => {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+
+    try {
+        await page.goto('https://hackathons.pro/', { waitUntil: 'networkidle2', timeout: 60000 });
+
+        // Пролистываем страницу, чтобы загрузить ленивые изображения
+        await page.evaluate(async () => {
+            const distance = 100; // Расстояние прокрутки
+            const delay = 100;   // Задержка между прокрутками
+            while (document.body.scrollHeight > window.scrollY + window.innerHeight) {
+                window.scrollBy(0, distance);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        });
+
+        // Ожидаем загрузки всех изображений
+        await page.evaluate(() => {
+            const images = Array.from(document.querySelectorAll('img'));
+            return Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => img.onload = resolve);
+            }));
+        });
+
+        // Извлекаем HTML блока с хакатонами
+        const htmlContent = await page.evaluate(() => {
+            const block = document.querySelector('.js-feed.t-feed.t-feed_col');
+            return block ? block.outerHTML : null;
+        });
+
+        // Извлекаем ссылки на изображения
+        const imageLinks = await page.evaluate(() => {
+            const images = Array.from(document.querySelectorAll('.js-feed.t-feed.t-feed_col img'));
+            const backgrounds = Array.from(document.querySelectorAll('.js-feed.t-feed.t-feed_col'));
+
+            const imgLinks = images.map(img => img.dataset.src || img.src); // Либо data-src, либо src
+            const bgLinks = backgrounds.map(el => {
+                const bgStyle = window.getComputedStyle(el).backgroundImage;
+                return bgStyle && bgStyle !== 'none'
+                    ? bgStyle.replace(/^url\(["']?/, '').replace(/["']?\)$/, '')
+                    : null;
+            });
+
+            return [...imgLinks, ...bgLinks.filter(Boolean)]; // Убираем пустые значения
+        });
+
+        // Извлекаем ссылки на CSS стили
+        const cssContent = await page.evaluate(() => {
+            const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+            return styles.map(style => style.href); // Возвращаем ссылки на CSS
+        });
+
+        if (!htmlContent) {
+            res.status(404).json({ message: 'Блок с хакатонами не найден.' });
+        } else {
+            res.json({ html: htmlContent, css: cssContent, images: imageLinks });
+        }
+    } catch (err) {
+        console.error('Ошибка при парсинге:', err);
+        res.status(500).json({ message: 'Ошибка при загрузке данных' });
+    } finally {
+        await browser.close();
+    }
+});
+
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {

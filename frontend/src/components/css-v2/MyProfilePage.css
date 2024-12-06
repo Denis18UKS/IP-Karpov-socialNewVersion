@@ -1,3 +1,47 @@
+/* В MyProfilePage.css */
+
+/* Стиль для спиннера */
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Контейнер для спиннера и текста */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    flex-direction: column;
+    color: white;
+    font-size: 18px;
+}
+
+.loading-container p {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
 #controlling-profile {
     display: flex;
     flex-direction: column;
@@ -9,7 +53,6 @@
     padding: 40px 20px;
     /* Увеличенные отступы */
     text-align: center;
-
 }
 
 #profile-img {
@@ -84,7 +127,6 @@ footer {
     #profile-img {
         flex-direction: column;
         gap: 20px;
-
     }
 
     #profile-img img {
@@ -97,7 +139,6 @@ footer {
         /* Уменьшаем отступы на мобильных */
         text-align: center;
         text-align: center;
-
     }
 
     .scroll-table {

@@ -1,3 +1,26 @@
+/* Анимации для ссылок */
+.nav-link-enter {
+    opacity: 0;
+    transform: translateX(-50%);
+}
+
+.nav-link-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.nav-link-exit {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.nav-link-exit-active {
+    opacity: 0;
+    transform: translateX(50%);
+    transition: opacity 500ms ease, transform 500ms ease;
+}
+
 /* Основной стиль хедера */
 header {
     background: linear-gradient(90deg, #e3fdfd, #ffe6fa);
@@ -158,7 +181,6 @@ nav a:hover::after {
     header {
         padding: 10px 15px;
         position: relative;
-        
     }
 
     h1 {

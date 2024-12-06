@@ -57,6 +57,7 @@ const MyProfilePage = () => {
         navigate("/profile/edit");
     };
 
+    // Модальные функции для получения данных из GitHub
     const fetchCommits = async (repoName) => {
         setModalType("commits");
         setIsModalOpen(true);
@@ -167,15 +168,16 @@ const MyProfilePage = () => {
     }, [isModalOpen]);
 
     if (loading) {
-        return <p>Загрузка...</p>;
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+            </div>
+        );
     }
 
     if (!user) {
         return <p>Ошибка загрузки данных пользователя</p>;
     }
-
-    // Получаем имя текущего пользователя из локального хранилища
-    const currentUserUsername = localStorage.getItem("username");
 
     return (
         <div>

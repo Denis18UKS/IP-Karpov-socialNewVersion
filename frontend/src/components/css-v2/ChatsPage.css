@@ -33,16 +33,17 @@
 }
 
 .user-list li.active-chat {
-    background-color: mediumaquamarine; /* Зеленый фон для активного чата */
+    background-color: #008080a1; /* Зеленый фон для активного чата */
     color: white; /* Белый цвет текста */
     font-weight: bold; /* Жирный шрифт */
-    transition: background-color 0.3s ease, color 0.3s ease; /* Плавные переходы */
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease; /* Плавные переходы */
 }
 
 .user-list li.active-chat:hover {
     background-color: teal; /* Немного темнее зеленый при наведении */
 }
-
 
 .user-list img {
     width: 40px;
@@ -62,7 +63,7 @@
 }
 
 .chat-header {
-    background-color: teal;
+    background-color: #008080a1;
     color: white;
     padding: 15px;
     font-weight: bold;
@@ -110,10 +111,11 @@
     margin-top: 10px;
     padding: 10px;
     border-top: 1px solid #ddd;
-    background-color: #fff;
+    background-color: #40e0d054;
     position: sticky;
     bottom: 0;
     align-items: center;
+    border-radius: 1em;
 }
 
 .chat-input {
@@ -173,7 +175,9 @@ footer {
     /* Размер стрелки */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     /* Легкая тень для глубины */
-    transition: background-color 0.3s, transform 0.3s;
+    transition:
+        background-color 0.3s,
+        transform 0.3s;
     /* Плавные переходы */
 }
 
@@ -196,7 +200,6 @@ footer {
 
 /* Медиазапросы для адаптивности */
 @media (max-width: 768px) {
-
     .user-list {
         width: min-content;
         border-right: none;
@@ -247,7 +250,6 @@ footer {
 }
 
 @media (max-width: 480px) {
-
     .user-list {
         width: min-content;
         padding: 10px;

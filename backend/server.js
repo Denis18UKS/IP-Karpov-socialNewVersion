@@ -110,7 +110,26 @@ app.get('/hackathons', async (req, res) => {
     const page = await browser.newPage();
 
     try {
-        await page.goto('https://hackathons.pro/', { waitUntil: 'networkidle0', timeout: 60000 });
+        await page.goto('https://hackathons.pro/', { waitUntil: 'networkidle2', timeout: 60000 });
+
+        // Пролистываем страницу, чтобы загрузить ленивые изображения
+        await page.evaluate(async () => {
+            const distance = 100; // Расстояние прокрутки
+            const delay = 100;   // Задержка между прокрутками
+            while (document.body.scrollHeight > window.scrollY + window.innerHeight) {
+                window.scrollBy(0, distance);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        });
+
+        // Ожидаем загрузки всех изображений
+        await page.evaluate(() => {
+            const images = Array.from(document.querySelectorAll('img'));
+            return Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => img.onload = resolve);
+            }));
+        });
 
         // Извлекаем HTML блока с хакатонами
         const htmlContent = await page.evaluate(() => {
@@ -121,7 +140,17 @@ app.get('/hackathons', async (req, res) => {
         // Извлекаем ссылки на изображения
         const imageLinks = await page.evaluate(() => {
             const images = Array.from(document.querySelectorAll('.js-feed.t-feed.t-feed_col img'));
-            return images.map(img => img.src); // Возвращаем ссылки на изображения
+            const backgrounds = Array.from(document.querySelectorAll('.js-feed.t-feed.t-feed_col'));
+
+            const imgLinks = images.map(img => img.dataset.src || img.src); // Либо data-src, либо src
+            const bgLinks = backgrounds.map(el => {
+                const bgStyle = window.getComputedStyle(el).backgroundImage;
+                return bgStyle && bgStyle !== 'none'
+                    ? bgStyle.replace(/^url\(["']?/, '').replace(/["']?\)$/, '')
+                    : null;
+            });
+
+            return [...imgLinks, ...bgLinks.filter(Boolean)]; // Убираем пустые значения
         });
 
         // Извлекаем ссылки на CSS стили
@@ -142,6 +171,7 @@ app.get('/hackathons', async (req, res) => {
         await browser.close();
     }
 });
+
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {

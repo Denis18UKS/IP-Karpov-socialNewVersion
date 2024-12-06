@@ -4,6 +4,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 require("dotenv").config();
+
+const puppeteer = require("puppeteer");
 const axios = require("axios");
 const app = express();
 const githubRoutes = require('./routes/github');
@@ -102,6 +104,35 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+// Новый маршрут для парсинга хакатонов
+app.get('/hackathons', async (req, res) => {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    // Перейдите на страницу с хакатонами
+    await page.goto('https://www.xn--80aa3anexr8c.xn--p1ai/', { waitUntil: 'networkidle0' });
+
+    const hackathons = await page.evaluate(() => {
+        const events = [];
+        document.querySelectorAll('.event-card').forEach(card => {
+            const title = card.querySelector('.event-title')?.innerText;
+            const description = card.querySelector('.event-description')?.innerText;
+            const date = card.querySelector('.event-date')?.innerText;
+            const location = card.querySelector('.event-location')?.innerText;
+            const link = card.querySelector('a')?.href;
+
+            if (title && description && date && link) {
+                events.push({ title, description, date, location, link });
+            }
+        });
+        return events;
+    });
+
+    await browser.close();
+
+    res.json(hackathons);
+});
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {

@@ -1,107 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Добавляем TransitionGroup и CSSTransition
-import './css-v2/Header.css'; // Импортируем CSS файл
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import './css-v2/Header.css';
 
 const Header = ({ isAuthenticated, setIsAuthenticated }) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const handleLogout = () => {
         setIsAuthenticated(false);
-        // Очистить токен и другую информацию из localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
         localStorage.removeItem('role');
     };
 
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+    };
+
     return (
         <header>
             <h1>IT-BIRD</h1>
-            <nav>
+            <button className="menu-toggle" onClick={toggleMenu}>
+                ☰
+            </button>
+            <nav className={`navigation ${isMenuOpen ? 'open' : ''}`}>
                 <TransitionGroup>
-                    <CSSTransition
-                        in={true}
-                        timeout={500}
-                        classNames="nav-link"
-                        unmountOnExit
-                    >
-                        <Link to="/">Главная</Link>
+                    <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                        <Link to="/" onClick={() => setIsMenuOpen(false)}>Главная</Link>
                     </CSSTransition>
 
                     {!isAuthenticated ? (
                         <>
-                            <CSSTransition
-                                in={true}
-                                timeout={500}
-                                classNames="nav-link"
-                                unmountOnExit
-                            >
-                                <Link to="/register">Регистрация</Link>
+                            <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                <Link to="/register" onClick={() => setIsMenuOpen(false)}>Регистрация</Link>
                             </CSSTransition>
-
-                            <CSSTransition
-                                in={true}
-                                timeout={500}
-                                classNames="nav-link"
-                                unmountOnExit
-                            >
-                                <Link to="/login">Вход</Link>
+                            <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                <Link to="/login" onClick={() => setIsMenuOpen(false)}>Вход</Link>
                             </CSSTransition>
                         </>
                     ) : (
                         <>
-                            <CSSTransition
-                                in={true}
-                                timeout={500}
-                                classNames="nav-link"
-                                unmountOnExit
-                            >
-                                <Link to="/profile">Мой Профиль</Link>
+                            <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                <Link to="/profile" onClick={() => setIsMenuOpen(false)}>Мой Профиль</Link>
                             </CSSTransition>
-
-                            <CSSTransition
-                                in={true}
-                                timeout={500}
-                                classNames="nav-link"
-                                unmountOnExit
-                            >
-                                <Link to="/chats">Чаты</Link>
+                            <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                <Link to="/chats" onClick={() => setIsMenuOpen(false)}>Чаты</Link>
                             </CSSTransition>
-
-                            <CSSTransition
-                                in={true}
-                                timeout={500}
-                                classNames="nav-link"
-                                unmountOnExit
-                            >
-                                <Link to="/users">Пользователи</Link>
+                            <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                <Link to="/users" onClick={() => setIsMenuOpen(false)}>Пользователи</Link>
                             </CSSTransition>
-
-                            <CSSTransition
-                                in={true}
-                                timeout={500}
-                                classNames="nav-link"
-                                unmountOnExit
-                            >
-                                <Link to="/forum">Форум</Link>
+                            <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                <Link to="/forum" onClick={() => setIsMenuOpen(false)}>Форум</Link>
                             </CSSTransition>
-
-                            <CSSTransition
-                                in={true}
-                                timeout={500}
-                                classNames="nav-link"
-                                unmountOnExit
-                            >
-                                <Link to="/xakatons">IT-Хакатоны</Link>
+                            <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                <Link to="/xakatons" onClick={() => setIsMenuOpen(false)}>IT-Хакатоны</Link>
                             </CSSTransition>
+                            <button className="exit-btn" onClick={handleLogout}>Выйти</button>
                         </>
                     )}
                 </TransitionGroup>
-
-                {/* Кнопка выхода отдельно, чтобы она не была затронута анимацией */}
-                {isAuthenticated && (
-                    <button className="exit-btn" onClick={handleLogout}>
-                        Выйти
-                    </button>
-                )}
             </nav>
         </header>
     );

@@ -1,4 +1,30 @@
+* {
+    text-decoration: none;
+}
+
+hr{
+    border: 1px solid lightgray;
+}
+
 /* Основной стиль для пользователей */
+.no-users {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    color: #888;
+    font-size: 18px;
+    font-style: italic;
+}
+
+.loading-message {
+    text-align: center;
+    color: #555;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+
 .users {
     padding: 20px;
     /* Отступы вокруг страницы */
@@ -29,7 +55,7 @@
     /* Плавное изменение фона и эффекта */
 }
 
-.users-list-page li:hover {
+.users-list-page li:hover{
     background: linear-gradient(135deg, #f9f9f9, #ffffff);
     /* Мягкий градиент при наведении */
     transform: translateY(-8px);
@@ -64,7 +90,17 @@
     /* Занимает оставшееся пространство */
     padding-right: 20px;
     /* Отступ справа */
+    font-size: x-large;
 }
+
+#name-and-skills p {
+    margin: 0;
+    font-weight: bold;
+    color: black;
+    transition: color 0.3s ease;
+}
+
+
 
 #name-and-skills h5 {
     margin: 0;
@@ -91,6 +127,11 @@
     /* Меньший размер шрифта */
     font-style: italic;
     /* Курсив для дополнительной информации */
+}
+
+#name-and-skills h6 i {
+    font-size: x-large;
+
 }
 
 .scroll-down-button {

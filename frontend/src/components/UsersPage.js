@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';  
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import './css-v2/UsersPage.css';
 import { jwtDecode as jwt_decode } from "jwt-decode";
@@ -14,6 +14,7 @@ const UsersPage = () => {
             const token = localStorage.getItem("token");
             if (!token) {
                 console.error("Токен не найден, необходима авторизация");
+                navigate('/login');
                 return;
             }
 
@@ -34,10 +35,10 @@ const UsersPage = () => {
                 }
 
                 const data = await response.json();
-                const decodedToken = jwt_decode(token); 
-                const currentUserId = decodedToken.id; 
+                const decodedToken = jwt_decode(token);
+                const currentUserId = decodedToken.id;
 
-                setUsers(data.filter((user) => user.id !== currentUserId)); 
+                setUsers(data.filter((user) => user.id !== currentUserId));
                 setLoading(false);
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
@@ -47,7 +48,7 @@ const UsersPage = () => {
         };
 
         fetchUsers();
-    }, []);
+    }, [navigate]);
 
     const openProfile = (username) => {
         navigate(`/users/${username}`);
@@ -78,12 +79,16 @@ const UsersPage = () => {
 
     return (
         <div className="users">
-            <ul className="users-list-page">
-                {loading ? (
-                    <p>Загрузка пользователей...</p>
-                ) : (
-                    users.map((user, index) => (
-                        <Link key={index} to={`/users/${user.username}`} onClick={() => fetchRepositories(user.github_username)}>
+            {loading ? (
+                <p className="loading-message">Загрузка пользователей...</p>
+            ) : users.length > 0 ? (
+                <ul className="users-list-page">
+                    {users.map((user, index) => (
+                        <Link
+                            key={index}
+                            to={`/users/${user.username}`}
+                            onClick={() => fetchRepositories(user.github_username)}
+                        >
                             <li>
                                 <img
                                     src={user.avatar ? `http://localhost:5000${user.avatar}` : "./images/default-avatar.png"}
@@ -98,9 +103,13 @@ const UsersPage = () => {
                                 </div>
                             </li>
                         </Link>
-                    ))
-                )}
-            </ul>
+                    ))}
+                </ul>
+            ) : (
+                <div className="no-users">
+                    <p>Пользователи не найдены</p>
+                </div>
+            )}
 
             <footer>
                 <p>&copy; 2024 IT-BIRD. Все права защищены.</p>

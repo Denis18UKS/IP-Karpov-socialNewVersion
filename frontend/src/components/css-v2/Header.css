@@ -1,3 +1,84 @@
+*:hover {
+    transition: all 0.4s ease-in-out;
+
+}
+
+/* Гамбургерное меню */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #ff6f91;
+    margin-left: auto;
+    transition: all 0.4s ease-in-out;
+}
+
+.menu-toggle:hover {
+    background-color: #fa70994b;
+}
+
+.navigation {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.navigation.open {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.navigation.open div {
+    display: contents;
+
+}
+
+/* Скрываем навигацию по умолчанию на мобильных */
+@media (max-width: 768px) {
+    .menu-toggle {
+        width: auto;
+        display: block;
+    }
+
+    .navigation {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: linear-gradient(90deg, #e3fdfd, #ffe6fa);
+        flex-direction: column;
+        gap: 10px;
+        width: 200px;
+        height: auto;
+        padding: 10px 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        transform: translateX(100%);
+        opacity: 0;
+        z-index: 100;
+    }
+
+    .navigation.open {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    nav a {
+        font-size: 16px;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .exit-btn {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        text-align: center;
+    }
+}
+
 /* Анимации для ссылок */
 .nav-link-enter {
     opacity: 0;

@@ -1,3 +1,7 @@
+body {
+    position: relative;
+}
+
 .chat-page {
     display: flex;
     padding: 20px;
@@ -33,16 +37,21 @@
 }
 
 .user-list li.active-chat {
-    background-color: #008080a1; /* Зеленый фон для активного чата */
-    color: white; /* Белый цвет текста */
-    font-weight: bold; /* Жирный шрифт */
+    background-color: #008080a1;
+    /* Зеленый фон для активного чата */
+    color: white;
+    /* Белый цвет текста */
+    font-weight: bold;
+    /* Жирный шрифт */
     transition:
         background-color 0.3s ease,
-        color 0.3s ease; /* Плавные переходы */
+        color 0.3s ease;
+    /* Плавные переходы */
 }
 
 .user-list li.active-chat:hover {
-    background-color: teal; /* Немного темнее зеленый при наведении */
+    background-color: teal;
+    /* Немного темнее зеленый при наведении */
 }
 
 .user-list img {
@@ -50,16 +59,6 @@
     height: 40px;
     border-radius: 20%;
     margin-right: 10px;
-}
-
-.chat-box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 0 10px 10px 0;
-    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .chat-header {
@@ -102,6 +101,7 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
+    background: aliceblue;
 }
 
 .chat-input-container {
@@ -111,7 +111,7 @@
     margin-top: 10px;
     padding: 10px;
     border-top: 1px solid #ddd;
-    background-color: #40e0d054;
+    background-color: mediumturquoise;
     position: sticky;
     bottom: 0;
     align-items: center;
@@ -140,9 +140,12 @@
 }
 
 footer {
+    position: absolute;
     text-align: center;
     margin-top: 20px;
     font-size: 14px;
+    bottom: 0;
+    width: -webkit-fill-available;
 }
 
 .notification-badge {
@@ -187,6 +190,25 @@ footer {
     transform: scale(1.1);
     /* Увеличение кнопки при наведении */
 }
+
+.no-users {
+    text-align: center;
+    font-size: 16px;
+    color: #999;
+    margin-top: 20px;
+}
+
+.empty-chat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background-color: #f9f9f9;
+    color: #aaa;
+    font-size: 18px;
+    font-style: italic;
+}
+
 
 @keyframes shake {
     0% {

@@ -296,6 +296,6 @@ const Chats = () => {
             </main>
         </div>
     );
-};dwwd
+};
 
 export default Chats;

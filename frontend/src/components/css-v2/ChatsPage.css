@@ -100,7 +100,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 100%;
+    height: auto;
+    width: -webkit-fill-available;
     background: aliceblue;
 }
 
@@ -169,7 +170,6 @@ footer {
     /* Отступ для предотвращения перекрытия с футером */
 }
 
-
 .notification-badge {
     z-index: 300;
     background-color: red;
@@ -230,7 +230,6 @@ footer {
     font-size: 18px;
     font-style: italic;
 }
-
 
 @keyframes shake {
     0% {

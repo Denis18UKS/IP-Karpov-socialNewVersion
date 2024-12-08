@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import './css-v2/HomePage.css'; // Импортируем CSS файл
+import './css-v2/HomePage.css';
 
 const HomePage = ({ isAuthenticated }) => {
     const [news, setNews] = useState([]);
@@ -51,7 +51,7 @@ const HomePage = ({ isAuthenticated }) => {
             formData.append("file", newsForm.file);
         }
 
-        // Получаем токен из localStorage или другого места
+        // Получаем токен из localStorage
         const token = localStorage.getItem('token');
 
         fetch("http://localhost:5000/news", {
@@ -74,7 +74,6 @@ const HomePage = ({ isAuthenticated }) => {
             .catch((error) => console.error("Ошибка при добавлении новости:", error));
     };
 
-
     // Функция для отправки формы поста
     const submitPostForm = () => {
         const formData = new FormData();
@@ -84,27 +83,31 @@ const HomePage = ({ isAuthenticated }) => {
             formData.append("file", postForm.file);
         }
 
-        fetch("http://localhost:3000/posts", {
+        fetch("http://localhost:5000/posts", {
             method: "POST",
             body: formData,
+            // Дополнительно можно добавить заголовки, если требуется
         })
             .then((response) => {
                 if (response.ok) {
                     alert("Пост добавлен!");
                     setIsPostModalOpen(false);
                     setPostForm({ title: "", description: "", image_url: "", file: null });
-                    return fetch("http://localhost:3000/posts").then((res) => res.json()).then(setPosts);
+                    return fetch("http://localhost:5000/posts").then((res) => res.json()).then(setPosts);
+                } else {
+                    alert('Ошибка при добавлении поста.');
                 }
             })
             .catch((error) => console.error("Ошибка при добавлении поста:", error));
     };
 
-    // В компоненте, где рендерятся новости и посты:
+
+    // Рендер карточек для новостей и постов
     const renderCards = (items, showMore) => {
         if (items.length === 0) {
             return <p className="no-items">Нет данных</p>;
         }
-        const visibleItems = showMore ? items : items.slice(0, 6);
+        const visibleItems = showMore ? items : items.slice(0, 6); // Показываем 6 первых карточек или все
         return visibleItems.map((item) => (
             <div key={item.id} className="card">
                 <img src={`http://localhost:5000${item.image_url}`} alt={item.title} />
@@ -119,7 +122,6 @@ const HomePage = ({ isAuthenticated }) => {
             </div>
         ));
     };
-
 
     // Обработка изменения данных формы новостей
     const handleNewsFormChange = (e) => {
@@ -147,7 +149,6 @@ const HomePage = ({ isAuthenticated }) => {
                             {showMoreNews ? "Скрыть" : "Показать больше"}
                         </button>
                     )}
-                    {/* Условный рендеринг для кнопки "Добавить новость" */}
                     {isAuthenticated && (
                         <button className="add-button-news" onClick={() => setIsNewsModalOpen(true)}>
                             Добавить новость
@@ -163,7 +164,6 @@ const HomePage = ({ isAuthenticated }) => {
                             {showMorePosts ? "Скрыть" : "Показать больше"}
                         </button>
                     )}
-                    {/* Условный рендеринг для кнопки "Создать пост" */}
                     {isAuthenticated && (
                         <button className="add-button-post" onClick={() => setIsPostModalOpen(true)}>
                             Создать пост

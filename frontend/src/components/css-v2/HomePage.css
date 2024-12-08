@@ -35,17 +35,16 @@ main {
 
 /* Карточки новостей и постов */
 .cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    width: 100%;
 }
 
 .card {
     background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 8px;
-    width: 300px;
     max-width: 100%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition:

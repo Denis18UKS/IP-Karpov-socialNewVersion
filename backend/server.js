@@ -677,6 +677,25 @@ app.get("/posts", async (req, res) => {
     }
 });
 
+app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
+    const { title, description} = req.body;
+    const file = req.file;
+
+    const authorId = req.user.id; // Извлекаем ID пользователя из токена
+    const imageUrl = file ? `/uploads/news/${file.filename}` : null;
+
+    try {
+        await db.query(
+            `INSERT INTO posts (title, description, image_url, author_id, status, created_at)
+            VALUES (?, ?, ?, ?, 'принят', NOW())`,
+            [title, description, imageUrl, authorId]
+        );
+        res.status(201).json({ message: "Пост создан!" });
+    } catch (error) {
+        console.error("Ошибка при добавлении новости:", error);
+        res.status(500).json({ message: "Не удалось добавить новость." });
+    }
+});
 
 
 // Получение всех вопросов

@@ -8,8 +8,8 @@ const HomePage = ({ isAuthenticated }) => {
     const [showMorePosts, setShowMorePosts] = useState(false);
     const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false); // Добавляем состояние загрузки
 
-    // Формы для новостей и постов
     const [newsForm, setNewsForm] = useState({
         title: "",
         description: "",
@@ -25,24 +25,29 @@ const HomePage = ({ isAuthenticated }) => {
         file: null
     });
 
-    // Загружаем новости и посты при монтировании компонента
     useEffect(() => {
         fetch("http://localhost:5000/news")
             .then(response => response.json())
             .then(data => setNews(data))
-            .catch(error => console.error("Ошибка при загрузке новостей:", error));
+            .catch(error => {
+                console.error("Ошибка при загрузке новостей:", error);
+                alert('Произошла ошибка при загрузке новостей. Попробуйте позже.');
+            });
 
         fetch("http://localhost:5000/posts")
             .then(response => response.json())
             .then(data => setPosts(data))
-            .catch(error => console.error("Ошибка при загрузке постов:", error));
+            .catch(error => {
+                console.error("Ошибка при загрузке постов:", error);
+                alert('Произошла ошибка при загрузке постов. Попробуйте позже.');
+            });
     }, []);
 
     const toggleShowMoreNews = () => setShowMoreNews(!showMoreNews);
     const toggleShowMorePosts = () => setShowMorePosts(!showMorePosts);
 
-    // Функция для отправки формы новостей
     const submitNewsForm = () => {
+        setLoading(true);
         const formData = new FormData();
         formData.append("title", newsForm.title);
         formData.append("description", newsForm.description);
@@ -51,14 +56,12 @@ const HomePage = ({ isAuthenticated }) => {
             formData.append("file", newsForm.file);
         }
 
-        // Получаем токен из localStorage
         const token = localStorage.getItem('token');
-
         fetch("http://localhost:5000/news", {
             method: "POST",
             body: formData,
             headers: {
-                'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+                'Authorization': `Bearer ${token}`
             },
         })
             .then((response) => {
@@ -66,16 +69,17 @@ const HomePage = ({ isAuthenticated }) => {
                     alert("Новость добавлена!");
                     setIsNewsModalOpen(false);
                     setNewsForm({ title: "", description: "", image_url: "", link: "", file: null });
-                    return fetch("http://localhost:3000/news").then((res) => res.json()).then(setNews);
+                    return fetch("http://localhost:5000/news").then((res) => res.json()).then(setNews);
                 } else {
                     alert('Ошибка авторизации. Пожалуйста, войдите в систему.');
                 }
             })
-            .catch((error) => console.error("Ошибка при добавлении новости:", error));
+            .catch((error) => console.error("Ошибка при добавлении новости:", error))
+            .finally(() => setLoading(false)); // Останавливаем загрузку
     };
 
-    // Функция для отправки формы поста
     const submitPostForm = () => {
+        setLoading(true);
         const formData = new FormData();
         formData.append("title", postForm.title);
         formData.append("description", postForm.description);
@@ -83,10 +87,13 @@ const HomePage = ({ isAuthenticated }) => {
             formData.append("file", postForm.file);
         }
 
+        const token = localStorage.getItem('token');
         fetch("http://localhost:5000/posts", {
             method: "POST",
             body: formData,
-            // Дополнительно можно добавить заголовки, если требуется
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
         })
             .then((response) => {
                 if (response.ok) {
@@ -98,19 +105,18 @@ const HomePage = ({ isAuthenticated }) => {
                     alert('Ошибка при добавлении поста.');
                 }
             })
-            .catch((error) => console.error("Ошибка при добавлении поста:", error));
+            .catch((error) => console.error("Ошибка при добавлении поста:", error))
+            .finally(() => setLoading(false)); // Останавливаем загрузку
     };
 
-
-    // Рендер карточек для новостей и постов
     const renderCards = (items, showMore) => {
         if (items.length === 0) {
             return <p className="no-items">Нет данных</p>;
         }
-        const visibleItems = showMore ? items : items.slice(0, 6); // Показываем 6 первых карточек или все
+        const visibleItems = showMore ? items : items.slice(0, 6);
         return visibleItems.map((item) => (
             <div key={item.id} className="card">
-                <img src={`http://localhost:5000${item.image_url}`} alt={item.title} />
+                <img src={`http://localhost:5000/uploads/news/${item.image_url}`} alt={item.title} />
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
                 {item.link && (
@@ -123,15 +129,27 @@ const HomePage = ({ isAuthenticated }) => {
         ));
     };
 
-    // Обработка изменения данных формы новостей
     const handleNewsFormChange = (e) => {
         setNewsForm({ ...newsForm, [e.target.name]: e.target.value });
     };
 
-    // Обработка изменения данных формы постов
     const handlePostFormChange = (e) => {
         setPostForm({ ...postForm, [e.target.name]: e.target.value });
     };
+
+    const handleClickOutside = (e) => {
+        if (e.target.classList.contains('modal')) {
+            setIsNewsModalOpen(false);
+            setIsPostModalOpen(false);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
 
     return (
         <div>
@@ -207,7 +225,9 @@ const HomePage = ({ isAuthenticated }) => {
                             onChange={handleNewsFormChange}
                             placeholder="Ссылка"
                         />
-                        <button onClick={submitNewsForm}>Сохранить</button>
+                        <button onClick={submitNewsForm} disabled={loading}>
+                            {loading ? "Сохраняем..." : "Сохранить"}
+                        </button>
                         <button onClick={() => setIsNewsModalOpen(false)}>Отмена</button>
                     </div>
                 </div>
@@ -237,7 +257,9 @@ const HomePage = ({ isAuthenticated }) => {
                             accept="image/*"
                             onChange={(e) => setPostForm({ ...postForm, file: e.target.files[0] })}
                         />
-                        <button onClick={submitPostForm}>Сохранить</button>
+                        <button onClick={submitPostForm} disabled={loading}>
+                            {loading ? "Сохраняем..." : "Сохранить"}
+                        </button>
                         <button onClick={() => setIsPostModalOpen(false)}>Отмена</button>
                     </div>
                 </div>

@@ -33,7 +33,7 @@ main {
     color: #555;
 }
 
-/* Карточки новостей и постов */
+/* Стиль для секции новостей и постов */
 .cards-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -42,14 +42,12 @@ main {
 }
 
 .card {
-    background-color: #ffffff;
+background-color: #ffffff;
     border: 1px solid #ddd;
     border-radius: 8px;
     max-width: 100%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition:
-        transform 0.3s,
-        box-shadow 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .card:hover {
@@ -115,7 +113,7 @@ button {
     top: 0;
 }
 
-.add-button-post{
+.add-button-post {
     z-index: 199;
     position: fixed;
     left: 10%;
@@ -205,8 +203,8 @@ footer {
         left: 0;
         top: 0;
     }
-    
-    .add-button-post{
+
+    .add-button-post {
         z-index: 199;
         position: fixed;
         left: 0;
@@ -238,8 +236,8 @@ footer {
         left: 0;
         top: 0;
     }
-    
-    .add-button-post{
+
+    .add-button-post {
         width: auto;
         z-index: 199;
         position: fixed;

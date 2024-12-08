@@ -37,7 +37,7 @@ const notifyClients = (notification) => {
     });
 };
 
-app.use('/uploads/avatars', express.static(path.join(__dirname, 'uploads', 'avatars')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads/news', express.static(path.join(__dirname, 'uploads', 'news')));
 app.use('/uploads/posts', express.static(path.join(__dirname, 'uploads', 'posts')));
 
@@ -361,7 +361,7 @@ app.get('/profile', verifyToken, async (req, res) => {
 app.put('/profile/update', verifyToken, upload.single('avatar'), async (req, res) => {
     const { id } = req.user;
     const { username, github_username, skills, email } = req.body;
-    const avatar = req.file ? `/uploads/avatars/${req.file.filename}` : null;
+    const avatar = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
         if (github_username !== undefined) {

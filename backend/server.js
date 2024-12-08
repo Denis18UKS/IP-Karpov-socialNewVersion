@@ -550,8 +550,6 @@ app.get('/messages/:chatId', verifyToken, async (req, res) => {
     }
 });
 
-
-
 app.post('/chats', verifyToken, async (req, res) => {
     const { userId2 } = req.body; // ID другого пользователя
     const { id: userId1 } = req.user;

@@ -15,10 +15,33 @@ const Chats = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
     const [unreadMessagesCount, setUnreadMessagesCount] = useState({});
-    const [showScrollButton, setShowScrollButton] = useState(false);
     const navigate = useNavigate();
     const messagesEndRef = useRef(null);
 
+    // Подключение WebSocket
+    useEffect(() => {
+        const socket = new WebSocket('ws://localhost:8080');
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === "NEW_MESSAGE" && data.data.chat_id === parseInt(chatId)) {
+                setMessages((prevMessages) => [...prevMessages, data.data]);
+            }
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, [chatId]);
+
+    // Автопрокрутка при новом сообщении
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
+
+    // Загрузка пользователей
     useEffect(() => {
         const fetchUsers = async () => {
             const token = localStorage.getItem("token");
@@ -51,6 +74,7 @@ const Chats = () => {
         fetchUsers();
     }, [navigate]);
 
+    // Выбор чата
     const selectChat = (user) => {
         if (selectedUser && selectedUser.id === user.id) {
             return;
@@ -81,6 +105,48 @@ const Chats = () => {
             .catch(err => console.error("Ошибка при создании чата", err));
     };
 
+    // Загрузка сообщений для текущего чата
+    useEffect(() => {
+        if (!chatId) return;
+
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        fetch(`http://localhost:5000/messages/${chatId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        })
+            .then(response => response.json())
+            .then(chatMessages => setMessages(chatMessages))
+            .catch(err => console.error("Ошибка при загрузке сообщений", err));
+    }, [chatId]);
+
+    // Отправка сообщения
+    const handleSendMessage = () => {
+        if (!newMessage.trim()) return;
+
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        fetch('http://localhost:5000/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ chatId, message: newMessage }),
+        })
+            .then(response => response.json())
+            .then((data) => {
+                setMessages((prevMessages) => [...prevMessages, data]);
+                setNewMessage('');
+            })
+            .catch((err) => console.error("Ошибка при отправке сообщения:", err));
+    };
+
+    // Обработка поиска пользователей
     const handleSearchChange = (e) => {
         const query = e.target.value.toLowerCase();
         setSearchQuery(query);
@@ -90,6 +156,7 @@ const Chats = () => {
         setFilteredUsers(filtered);
     };
 
+    // Получение URL аватара
     const getAvatarUrl = (avatar) => {
         return avatar ? `http://localhost:5000${avatar}` : '/images/default-avatar.png';
     };
@@ -156,7 +223,7 @@ const Chats = () => {
                                 placeholder="Введите сообщение..."
                                 className="chat-input"
                             />
-                            <button className="chat-send btn">Отправить</button>
+                            <button className="chat-send btn" onClick={handleSendMessage}>Отправить</button>
                         </div>
                     </>
                 ) : (

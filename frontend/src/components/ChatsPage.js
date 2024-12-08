@@ -41,7 +41,7 @@ const Chats = () => {
                 const usersData = await response.json();
                 const filteredUsers = usersData.filter(user => user.id !== decodedToken.id);
                 setUsers(filteredUsers);
-                setFilteredUsers(filteredUsers); 
+                setFilteredUsers(filteredUsers);
             } catch (error) {
                 console.error("Ошибка при загрузке пользователей:", error);
                 navigate('/login');
@@ -86,19 +86,22 @@ const Chats = () => {
             if (notification.type === 'NEW_MESSAGE') {
                 const message = notification.data;
 
-                // Если сообщение уже есть или отправлено текущим пользователем, игнорируем
-                if (message.user_id === currentUser.id) return;
-
-                // Если сообщение из другого чата
-                if (message.chat_id !== chatId) {
-                    toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
-                    setUnreadMessagesCount((prevState) => ({
-                        ...prevState,
-                        [message.chat_id]: (prevState[message.chat_id] || 0) + 1,
-                    }));
-                } else {
+                // Если сообщение из текущего чата, то показываем его
+                if (message.chat_id === chatId) {
                     setMessages((prevMessages) => [...prevMessages, message]);
-                    setShowScrollButton(true);  // Показываем кнопку прокрутки
+                    setShowScrollButton(true); // Показываем кнопку для прокрутки
+                } else {
+                    // Уведомления не отправляются участникам чата
+                    if (message.chat_id !== chatId) {
+                        // Отправляем уведомление только тем, кто не в чате
+                        if (message.user_id !== currentUser.id) {
+                            toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
+                            setUnreadMessagesCount((prevState) => ({
+                                ...prevState,
+                                [message.chat_id]: (prevState[message.chat_id] || 0) + 1,
+                            }));
+                        }
+                    }
                 }
             }
         };
@@ -165,7 +168,7 @@ const Chats = () => {
 
                     setMessages((prevMessages) => [...prevMessages, sentMessage]);
                     setNewMessage('');
-                    scrollToBottom();
+                    scrollToBottom(); // Прокрутка для отправителя
                 } else {
                     throw new Error('Ошибка при отправке сообщения');
                 }
@@ -201,7 +204,7 @@ const Chats = () => {
 
     const handleScrollButtonClick = () => {
         scrollToBottom();
-        setShowScrollButton(false);  // Скрыть кнопку после прокрутки
+        setShowScrollButton(false);
     };
 
     return (
@@ -237,41 +240,44 @@ const Chats = () => {
             </aside>
 
             <main className="chat-box">
-                <div className="chat-header">
-                    <h2>{selectedUser ? selectedUser.username : 'Выберите пользователя'}</h2>
-                </div>
-
-                <div className="chat-messages">
-                    {messages.map((message) => (
-                        <div key={message.id} className={message.user_id === currentUser.id ? 'message mine' : 'message'}>
-                            {message.message || 'Сообщение не найдено'}
+                {selectedUser ? (
+                    <>
+                        <div className="chat-header"></div>
+                        <div className="chat-messages">
+                            {messages.map((message) => (
+                                <div key={message.id} className={message.user_id === currentUser.id ? 'message mine' : 'message'}>
+                                    {message.message || 'Сообщение не найдено'}
+                                </div>
+                            ))}
+                            <div ref={messagesEndRef} />
                         </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                </div>
+                        {showScrollButton && (
+                            <button
+                                className="scroll-down-button"
+                                onClick={handleScrollButtonClick}
+                            >
+                                ↓
+                            </button>
+                        )}
+                        <div className="chat-input-container">
 
-                {showScrollButton && (
-                    <button
-                        className="scroll-down-button"
-                        onClick={handleScrollButtonClick}  // Обработчик клика на кнопку
-                    >
-                        ↓
-                    </button>
+                            <input
+                                type="text"
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Введите сообщение..."
+                                className="chat-input"
+                            />
+
+                            <button className="chat-send btn" onClick={sendMessage}>Отправить</button>
+                        </div>
+                    </>
+                ) : (
+                    <div className="empty-chat" />
                 )}
 
-                {selectedUser && (
-                    <div className="chat-input-container">
-                        <input
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Введите сообщение..."
-                            className="chat-input"
-                        />
-                        <button className="chat-send btn" onClick={sendMessage}>Отправить</button>
-                    </div>
-                )}
+
             </main>
         </div>
     );

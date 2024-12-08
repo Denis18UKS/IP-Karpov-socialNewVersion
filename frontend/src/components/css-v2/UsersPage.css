@@ -2,7 +2,7 @@
     text-decoration: none;
 }
 
-hr{
+hr {
     border: 1px solid lightgray;
 }
 
@@ -23,7 +23,6 @@ hr{
     font-size: 16px;
     margin-top: 20px;
 }
-
 
 .users {
     padding: 20px;
@@ -51,11 +50,14 @@ hr{
     /* Более округлые края */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     /* Глубокая тень для объема */
-    transition: background 0.3s, transform 0.3s ease, box-shadow 0.3s;
+    transition:
+        background 0.3s,
+        transform 0.3s ease,
+        box-shadow 0.3s;
     /* Плавное изменение фона и эффекта */
 }
 
-.users-list-page li:hover{
+.users-list-page li:hover {
     background: linear-gradient(135deg, #f9f9f9, #ffffff);
     /* Мягкий градиент при наведении */
     transform: translateY(-8px);
@@ -100,8 +102,6 @@ hr{
     transition: color 0.3s ease;
 }
 
-
-
 #name-and-skills h5 {
     margin: 0;
     color: #333;
@@ -131,11 +131,11 @@ hr{
 
 #name-and-skills h6 i {
     font-size: x-large;
-
 }
 
 .scroll-down-button {
     position: sticky;
+    bottom: 10%;
 }
 
 /* Стили для уведомлений */

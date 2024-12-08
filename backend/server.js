@@ -37,7 +37,10 @@ const notifyClients = (notification) => {
     });
 };
 
-app.use('/uploads/avatars/', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads/news', express.static(path.join(__dirname, 'uploads', 'news')));
+app.use('/uploads/posts', express.static(path.join(__dirname, 'uploads', 'posts')));
+
 app.use('/github', githubRoutes);
 
 // Логирование запросов
@@ -76,34 +79,45 @@ const generateToken = (user) => {
 
 // Middleware для проверки токена
 const verifyToken = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header('Authorization')?.replace('Bearer ', ''); // Извлекаем токен
     if (!token) {
-        return res.status(401).json({ message: 'Нет авторизации, токен не предоставлен' });
+        return res.status(401).json({ message: 'Токен не предоставлен' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;  // Добавляем декодированные данные в объект запроса
-        next();
-    } catch (err) {
-        console.error('Неверный токен:', err);
-        return res.status(401).json({ message: 'Неверный токен или токен истек' });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Проверяем токен
+        req.user = decoded; // Сохраняем данные пользователя
+        next(); // Переходим к следующему middleware
+    } catch (error) {
+        console.error('Ошибка токена:', error);
+        return res.status(401).json({ message: 'Неверный токен' });
     }
 };
 
 
 
-// Настройка multer для загрузки файлов
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, './uploads');
+        let destinationPath;
+        if (req.url.includes('/avatars')) {
+            destinationPath = 'uploads/avatars';
+        } else if (req.url.includes('/news')) {
+            destinationPath = 'uploads/news';
+        } else if (req.url.includes('/posts')) {
+            destinationPath = 'uploads/posts';
+        } else {
+            destinationPath = 'uploads'; // Default destination
+        }
+        cb(null, destinationPath);
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    },
+        cb(null, Date.now() + '-' + file.originalname);
+    }
 });
 
 const upload = multer({ storage });
+
 
 app.get('/hackathons', async (req, res) => {
     const browser = await puppeteer.launch({ headless: true });
@@ -347,7 +361,7 @@ app.get('/profile', verifyToken, async (req, res) => {
 app.put('/profile/update', verifyToken, upload.single('avatar'), async (req, res) => {
     const { id } = req.user;
     const { username, github_username, skills, email } = req.body;
-    const avatar = req.file ? `/uploads/avatars/${req.file.filename}` : null;
+    const avatar = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
         if (github_username !== undefined) {
@@ -536,8 +550,6 @@ app.get('/messages/:chatId', verifyToken, async (req, res) => {
     }
 });
 
-
-
 app.post('/chats', verifyToken, async (req, res) => {
     const { userId2 } = req.body; // ID другого пользователя
     const { id: userId1 } = req.user;
@@ -619,6 +631,80 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
     } catch (error) {
         console.error('Ошибка при получении репозиториев:', error);
         res.status(500).json({ message: 'Ошибка при получении репозиториев' });
+    }
+});
+
+// Получение всех новостей
+app.get("/news", async (req, res) => {
+    try {
+        const [forums] = await db.query(`
+            SELECT n.id, n.title, n.description, n.status, n.link, n.image_url, n.author_id, n.created_at, u.username AS user
+            FROM news n
+            JOIN users u ON n.author_id = u.id
+            WHERE n.status = "принят"
+        `);
+        res.status(200).json(forums);
+    } catch (error) {
+        console.error("Ошибка при получении новостей:", error);
+        res.status(500).json({ message: "Ошибка при получении новостей" });
+    }
+});
+
+// Маршрут для добавления новости
+app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
+    const { title, description, link } = req.body;
+    const file = req.file;
+
+    const authorId = req.user.id; // Извлекаем ID пользователя из токена
+    const imageUrl = file ? `/uploads/news/${file.filename}` : null;
+
+    try {
+        await db.query(
+            `INSERT INTO news (title, description, link, image_url, author_id, status, created_at)
+            VALUES (?, ?, ?, ?, ?, 'принят', NOW())`,
+            [title, description, link, imageUrl, authorId]
+        );
+        res.status(201).json({ message: "Новость добавлена!" });
+    } catch (error) {
+        console.error("Ошибка при добавлении новости:", error);
+        res.status(500).json({ message: "Не удалось добавить новость." });
+    }
+});
+
+
+// Получение всех постов
+app.get("/posts", async (req, res) => {
+    try {
+        const [posts] = await db.query(`
+            SELECT p.id, p.title, p.description, p.status, p.image_url, p.author_id, p.created_at, u.username AS user
+            FROM posts p
+            JOIN users u ON p.author_id = u.id
+            WHERE p.status = "принят"
+        `);
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Ошибка при получении постов:", error);
+        res.status(500).json({ message: "Ошибка при получении постов" });
+    }
+});
+
+app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
+    const { title, description } = req.body;
+    const file = req.file;
+
+    const authorId = req.user.id; // Извлекаем ID пользователя из токена
+    const imageUrl = file ? `/uploads/posts/${file.filename}` : null;
+
+    try {
+        await db.query(
+            `INSERT INTO posts (title, description, image_url, author_id, status, created_at)
+            VALUES (?, ?, ?, ?, 'принят', NOW())`,
+            [title, description, imageUrl, authorId]
+        );
+        res.status(201).json({ message: "Пост создан!" });
+    } catch (error) {
+        console.error("Ошибка при добавлении новости:", error);
+        res.status(500).json({ message: "Не удалось добавить новость." });
     }
 });
 

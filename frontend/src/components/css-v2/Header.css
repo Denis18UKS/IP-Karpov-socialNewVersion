@@ -1,6 +1,5 @@
 *:hover {
     transition: all 0.4s ease-in-out;
-
 }
 
 /* Гамбургерное меню */
@@ -23,7 +22,9 @@
     display: flex;
     gap: 20px;
     align-items: center;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        opacity 0.3s ease;
 }
 
 .navigation.open {
@@ -33,12 +34,14 @@
 
 .navigation.open div {
     display: contents;
-
 }
 
 /* Скрываем навигацию по умолчанию на мобильных */
 @media (max-width: 768px) {
     .menu-toggle {
+        z-index: 200;
+        position: fixed;
+        right: 0;
         width: auto;
         display: block;
     }
@@ -61,6 +64,8 @@
     }
 
     .navigation.open {
+        top: 6%;
+        position: fixed;
         transform: translateX(0);
         opacity: 1;
     }
@@ -88,7 +93,9 @@
 .nav-link-enter-active {
     opacity: 1;
     transform: translateX(0);
-    transition: opacity 500ms ease, transform 500ms ease;
+    transition:
+        opacity 500ms ease,
+        transform 500ms ease;
 }
 
 .nav-link-exit {
@@ -99,7 +106,9 @@
 .nav-link-exit-active {
     opacity: 0;
     transform: translateX(50%);
-    transition: opacity 500ms ease, transform 500ms ease;
+    transition:
+        opacity 500ms ease,
+        transform 500ms ease;
 }
 
 /* Основной стиль хедера */
@@ -123,9 +132,11 @@ h1 {
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     text-shadow: 0 4px 8px rgba(255, 111, 145, 0.4);
-    transition: transform 0.3s ease, text-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        text-shadow 0.3s ease;
 }
 
 h1:hover {
@@ -149,7 +160,7 @@ nav a {
     position: relative;
     transition: all 0.3s ease;
     border-radius: 6px;
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", sans-serif;
 }
 
 nav a:hover {
@@ -188,7 +199,9 @@ nav a:hover::after {
     font-size: 16px;
     font-weight: 600;
     box-shadow: 0 4px 10px rgba(255, 117, 140, 0.5);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .exit-btn:hover {

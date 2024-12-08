@@ -8,7 +8,7 @@ const HomePage = ({ isAuthenticated }) => {
     const [showMorePosts, setShowMorePosts] = useState(false);
     const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false); 
+    const [loading, setLoading] = useState(false);
 
     const [newsForm, setNewsForm] = useState({
         title: "",
@@ -75,7 +75,7 @@ const HomePage = ({ isAuthenticated }) => {
                 }
             })
             .catch((error) => console.error("Ошибка при добавлении новости:", error))
-            .finally(() => setLoading(false)); 
+            .finally(() => setLoading(false));
     };
 
     const submitPostForm = () => {
@@ -106,17 +106,26 @@ const HomePage = ({ isAuthenticated }) => {
                 }
             })
             .catch((error) => console.error("Ошибка при добавлении поста:", error))
-            .finally(() => setLoading(false)); 
+            .finally(() => setLoading(false));
     };
 
     const renderCards = (items, showMore) => {
         if (items.length === 0) {
             return <p className="no-items">Нет данных</p>;
         }
-        const visibleItems = showMore ? items : items.slice(0, 6);
+        const visibleItems = showMore ? items : items.slice(0, 6); // Показываем 6 первых карточек или все
+
         return visibleItems.map((item) => (
             <div key={item.id} className="card">
-                <img src={`http://localhost:5000/uploads/news/${item.image_url}`} alt={item.title} />
+                {/* Проверяем, если картинка существует, то отображаем ее */}
+                {item.image_url && item.image_url !== 'null' ? (
+                    <img
+                        src={`http://localhost:5000${item.image_url}`}
+                        alt={item.title}
+                    />
+                ) : (
+                    <div className="no-image">Нет изображения</div> // Блок с текстом или можно оставить пустым
+                )}
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
                 {item.link && (
@@ -128,6 +137,8 @@ const HomePage = ({ isAuthenticated }) => {
             </div>
         ));
     };
+
+
 
     const handleNewsFormChange = (e) => {
         setNewsForm({ ...newsForm, [e.target.name]: e.target.value });

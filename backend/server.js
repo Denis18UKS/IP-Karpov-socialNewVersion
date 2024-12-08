@@ -37,7 +37,10 @@ const notifyClients = (notification) => {
     });
 };
 
-app.use('/uploads/avatars/', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads/avatars', express.static(path.join(__dirname, 'uploads', 'avatars')));
+app.use('/uploads/news', express.static(path.join(__dirname, 'uploads', 'news')));
+app.use('/uploads/posts', express.static(path.join(__dirname, 'uploads', 'posts')));
+
 app.use('/github', githubRoutes);
 
 // Логирование запросов
@@ -96,10 +99,20 @@ const verifyToken = (req, res, next) => {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/news'); // Убедитесь, что эта папка существует
+        let destinationPath;
+        if (req.url.includes('/avatars')) {
+            destinationPath = 'uploads/avatars';
+        } else if (req.url.includes('/news')) {
+            destinationPath = 'uploads/news';
+        } else if (req.url.includes('/posts')) {
+            destinationPath = 'uploads/posts';
+        } else {
+            destinationPath = 'uploads'; // Default destination
+        }
+        cb(null, destinationPath);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname); // Уникальное имя файла
+        cb(null, Date.now() + '-' + file.originalname);
     }
 });
 
@@ -678,11 +691,11 @@ app.get("/posts", async (req, res) => {
 });
 
 app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
-    const { title, description} = req.body;
+    const { title, description } = req.body;
     const file = req.file;
 
     const authorId = req.user.id; // Извлекаем ID пользователя из токена
-    const imageUrl = file ? `/uploads/news/${file.filename}` : null;
+    const imageUrl = file ? `/uploads/posts/${file.filename}` : null;
 
     try {
         await db.query(

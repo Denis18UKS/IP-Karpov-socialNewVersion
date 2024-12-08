@@ -622,6 +622,39 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
     }
 });
 
+// Получение всех новостей
+app.get("/news", async (req, res) => {
+    try {
+        const [forums] = await db.query(`
+            SELECT n.id, n.title, n.description, n.status, n.link, n.image_url, n.author_id, n.created_at, u.username AS user
+            FROM news n
+            JOIN users u ON n.author_id = u.id
+            WHERE n.status = "принят"
+        `);
+        res.status(200).json(forums);
+    } catch (error) {
+        console.error("Ошибка при получении новостей:", error);
+        res.status(500).json({ message: "Ошибка при получении новостей" });
+    }
+});
+
+// Получение всех постов
+app.get("/posts", async (req, res) => {
+    try {
+        const [posts] = await db.query(`
+            SELECT p.id, p.title, p.description, p.status, p.image_url, p.author_id, p.created_at, u.username AS user
+            FROM posts p
+            JOIN users u ON p.author_id = u.id
+            WHERE p.status = "принят"
+        `);
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Ошибка при получении постов:", error);
+        res.status(500).json({ message: "Ошибка при получении постов" });
+    }
+});
+
+
 
 // Получение всех вопросов
 app.get("/forums", async (req, res) => {

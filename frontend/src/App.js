@@ -36,10 +36,13 @@ function App() {
         setIsAuthenticated={setIsAuthenticated}
       />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={<HomePage isAuthenticated={isAuthenticated} />} // Передаем актуальное состояние авторизации
+        />
         <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/register" element={<RegisterPage />} />
-        
+
         {isAuthenticated ? (
           <>
             <Route path="/profile" element={<MyProfilePage />} /> {/* Для отображения вашего профиля */}
@@ -52,7 +55,7 @@ function App() {
             <Route path="/profile/edit" element={<EditProfilePage />} />
           </>
         ) : (
-          <Route path="*" element={<HomePage />} />
+          <Route path="*" element={<HomePage isAuthenticated={isAuthenticated} />} />
         )}
       </Routes>
     </Router>

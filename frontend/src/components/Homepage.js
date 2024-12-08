@@ -27,12 +27,12 @@ const HomePage = ({ isAuthenticated }) => {
 
     // Загружаем новости и посты при монтировании компонента
     useEffect(() => {
-        fetch("http://localhost:3000/news")
+        fetch("http://localhost:5000/news")
             .then(response => response.json())
             .then(data => setNews(data))
             .catch(error => console.error("Ошибка при загрузке новостей:", error));
 
-        fetch("http://localhost:3000/posts")
+        fetch("http://localhost:5000/posts")
             .then(response => response.json())
             .then(data => setPosts(data))
             .catch(error => console.error("Ошибка при загрузке постов:", error));
@@ -51,9 +51,15 @@ const HomePage = ({ isAuthenticated }) => {
             formData.append("file", newsForm.file);
         }
 
-        fetch("http://localhost:3000/news", {
+        // Получаем токен из localStorage или другого места
+        const token = localStorage.getItem('token');
+
+        fetch("http://localhost:5000/news", {
             method: "POST",
             body: formData,
+            headers: {
+                'Authorization': `Bearer ${token}` // Добавляем токен в заголовок
+            },
         })
             .then((response) => {
                 if (response.ok) {
@@ -61,10 +67,13 @@ const HomePage = ({ isAuthenticated }) => {
                     setIsNewsModalOpen(false);
                     setNewsForm({ title: "", description: "", image_url: "", link: "", file: null });
                     return fetch("http://localhost:3000/news").then((res) => res.json()).then(setNews);
+                } else {
+                    alert('Ошибка авторизации. Пожалуйста, войдите в систему.');
                 }
             })
             .catch((error) => console.error("Ошибка при добавлении новости:", error));
     };
+
 
     // Функция для отправки формы поста
     const submitPostForm = () => {

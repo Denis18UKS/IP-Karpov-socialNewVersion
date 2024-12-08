@@ -76,34 +76,35 @@ const generateToken = (user) => {
 
 // Middleware для проверки токена
 const verifyToken = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header('Authorization')?.replace('Bearer ', ''); // Извлекаем токен
     if (!token) {
-        return res.status(401).json({ message: 'Нет авторизации, токен не предоставлен' });
+        return res.status(401).json({ message: 'Токен не предоставлен' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;  // Добавляем декодированные данные в объект запроса
-        next();
-    } catch (err) {
-        console.error('Неверный токен:', err);
-        return res.status(401).json({ message: 'Неверный токен или токен истек' });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Проверяем токен
+        req.user = decoded; // Сохраняем данные пользователя
+        next(); // Переходим к следующему middleware
+    } catch (error) {
+        console.error('Ошибка токена:', error);
+        return res.status(401).json({ message: 'Неверный токен' });
     }
 };
 
 
 
-// Настройка multer для загрузки файлов
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, './uploads');
+        cb(null, 'uploads/news'); // Убедитесь, что эта папка существует
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    },
+        cb(null, Date.now() + '-' + file.originalname); // Уникальное имя файла
+    }
 });
 
 const upload = multer({ storage });
+
 
 app.get('/hackathons', async (req, res) => {
     const browser = await puppeteer.launch({ headless: true });
@@ -637,6 +638,28 @@ app.get("/news", async (req, res) => {
         res.status(500).json({ message: "Ошибка при получении новостей" });
     }
 });
+
+// Маршрут для добавления новости
+app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
+    const { title, description, link } = req.body;
+    const file = req.file;
+
+    const authorId = req.user.id; // Извлекаем ID пользователя из токена
+    const imageUrl = file ? `/uploads/news/${file.filename}` : null;
+
+    try {
+        await db.query(
+            `INSERT INTO news (title, description, link, image_url, author_id, status, created_at)
+            VALUES (?, ?, ?, ?, ?, 'принят', NOW())`,
+            [title, description, link, imageUrl, authorId]
+        );
+        res.status(201).json({ message: "Новость добавлена!" });
+    } catch (error) {
+        console.error("Ошибка при добавлении новости:", error);
+        res.status(500).json({ message: "Не удалось добавить новость." });
+    }
+});
+
 
 // Получение всех постов
 app.get("/posts", async (req, res) => {

@@ -99,7 +99,7 @@ const HomePage = ({ isAuthenticated }) => {
             .catch((error) => console.error("Ошибка при добавлении поста:", error));
     };
 
-    // Рендер карточек для новостей и постов
+    // В компоненте, где рендерятся новости и посты:
     const renderCards = (items, showMore) => {
         if (items.length === 0) {
             return <p className="no-items">Нет данных</p>;
@@ -107,7 +107,7 @@ const HomePage = ({ isAuthenticated }) => {
         const visibleItems = showMore ? items : items.slice(0, 6);
         return visibleItems.map((item) => (
             <div key={item.id} className="card">
-                <img src={item.image_url} alt={item.title} />
+                <img src={`http://localhost:5000${item.image_url}`} alt={item.title} />
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
                 {item.link && (
@@ -119,6 +119,7 @@ const HomePage = ({ isAuthenticated }) => {
             </div>
         ));
     };
+
 
     // Обработка изменения данных формы новостей
     const handleNewsFormChange = (e) => {
@@ -148,7 +149,7 @@ const HomePage = ({ isAuthenticated }) => {
                     )}
                     {/* Условный рендеринг для кнопки "Добавить новость" */}
                     {isAuthenticated && (
-                        <button className="add-button" onClick={() => setIsNewsModalOpen(true)}>
+                        <button className="add-button-news" onClick={() => setIsNewsModalOpen(true)}>
                             Добавить новость
                         </button>
                     )}
@@ -164,7 +165,7 @@ const HomePage = ({ isAuthenticated }) => {
                     )}
                     {/* Условный рендеринг для кнопки "Создать пост" */}
                     {isAuthenticated && (
-                        <button className="add-button" onClick={() => setIsPostModalOpen(true)}>
+                        <button className="add-button-post" onClick={() => setIsPostModalOpen(true)}>
                             Создать пост
                         </button>
                     )}

@@ -8,7 +8,7 @@ const HomePage = ({ isAuthenticated }) => {
     const [showMorePosts, setShowMorePosts] = useState(false);
     const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false); // Добавляем состояние загрузки
+    const [loading, setLoading] = useState(false); 
 
     const [newsForm, setNewsForm] = useState({
         title: "",
@@ -75,7 +75,7 @@ const HomePage = ({ isAuthenticated }) => {
                 }
             })
             .catch((error) => console.error("Ошибка при добавлении новости:", error))
-            .finally(() => setLoading(false)); // Останавливаем загрузку
+            .finally(() => setLoading(false)); 
     };
 
     const submitPostForm = () => {
@@ -106,7 +106,7 @@ const HomePage = ({ isAuthenticated }) => {
                 }
             })
             .catch((error) => console.error("Ошибка при добавлении поста:", error))
-            .finally(() => setLoading(false)); // Останавливаем загрузку
+            .finally(() => setLoading(false)); 
     };
 
     const renderCards = (items, showMore) => {
@@ -159,9 +159,10 @@ const HomePage = ({ isAuthenticated }) => {
                     <p>Здесь вы можете авторизоваться, зарегистрироваться и просмотреть Мой Профиль.</p>
                 </section>
 
+                {/* Новостной блок */}
                 <section className="news-section">
                     <h2>Новости</h2>
-                    <div className="cards-container">{renderCards(news, showMoreNews)}</div>
+                    <div className="cards-container news-cards">{renderCards(news, showMoreNews)}</div>
                     {news.length > 6 && (
                         <button onClick={toggleShowMoreNews}>
                             {showMoreNews ? "Скрыть" : "Показать больше"}
@@ -174,9 +175,10 @@ const HomePage = ({ isAuthenticated }) => {
                     )}
                 </section>
 
+                {/* Постовый блок */}
                 <section className="posts-section">
                     <h2>Посты</h2>
-                    <div className="cards-container">{renderCards(posts, showMorePosts)}</div>
+                    <div className="cards-container posts-cards">{renderCards(posts, showMorePosts)}</div>
                     {posts.length > 6 && (
                         <button onClick={toggleShowMorePosts}>
                             {showMorePosts ? "Скрыть" : "Показать больше"}
@@ -194,7 +196,7 @@ const HomePage = ({ isAuthenticated }) => {
                 <p>&copy; 2024 IT-BIRD. Все права защищены.</p>
             </footer>
 
-            {/* Модальное окно для добавления новостей */}
+            {/* Модальные окна для новостей и постов */}
             {isNewsModalOpen && (
                 <div className="modal">
                     <div className="modal-content">
@@ -233,7 +235,6 @@ const HomePage = ({ isAuthenticated }) => {
                 </div>
             )}
 
-            {/* Модальное окно для добавления постов */}
             {isPostModalOpen && (
                 <div className="modal">
                     <div className="modal-content">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Для редиректа после авторизации
 import './css-v2/LoginPage.css'; // Импортируем CSS файл
 
@@ -7,6 +7,8 @@ const LoginPage = ({ setIsAuthenticated }) => {
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [showBlockedAlert, setShowBlockedAlert] = useState(false); // Состояние для отображения alert
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false); // Состояние для отображения success alert
+    const [timer, setTimer] = useState(5); // Таймер на 5 секунд
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -28,14 +30,24 @@ const LoginPage = ({ setIsAuthenticated }) => {
                 localStorage.setItem('userId', data.user.id);
                 localStorage.setItem('role', data.user.role);
 
-                setIsAuthenticated(true);
+                // Показываем alert с успехом
+                setShowSuccessAlert(true);
 
-                // Перенаправляем в зависимости от роли
-                if (data.user.role === 'admin') {
-                    navigate('/admin/users');
-                } else {
-                    navigate('/profile');
-                }
+                // Начинаем отсчет времени для редиректа
+                const countdown = setInterval(() => {
+                    setTimer((prevTimer) => {
+                        if (prevTimer === 1) {
+                            clearInterval(countdown); // Останавливаем таймер
+                            setIsAuthenticated(true); // Устанавливаем аутентификацию
+                            if (data.user.role === 'admin') {
+                                navigate('/admin/users');
+                            } else {
+                                navigate('/profile');
+                            }
+                        }
+                        return prevTimer - 1; // Уменьшаем время
+                    });
+                }, 1000); // Обновляем каждую секунду
             } else {
                 if (data.message === 'Ваш аккаунт заблокирован!') {
                     setShowBlockedAlert(true); // Показываем кастомный alert
@@ -95,6 +107,16 @@ const LoginPage = ({ setIsAuthenticated }) => {
                         <p>Обратитесь в техподдержку для решения проблемы.</p>
                         <button onClick={handleContactSupport}>Обратиться</button> {/* Кнопка для обращения в техподдержку */}
                         <button onClick={handleAlertClose}>Закрыть</button> {/* Кнопка для закрытия alert */}
+                    </div>
+                </div>
+            )}
+
+            {/* Кастомный alert для успешного входа */}
+            {showSuccessAlert && (
+                <div className="blocked-alert">
+                    <div className="alert-content">
+                        <h2>Вход успешен</h2>
+                        <p>Через {timer} секунд вас перенаправит в ваш профиль.</p>
                     </div>
                 </div>
             )}

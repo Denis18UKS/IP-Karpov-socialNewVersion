@@ -6,6 +6,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [showBlockedAlert, setShowBlockedAlert] = useState(false); // Состояние для отображения alert
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -36,12 +37,26 @@ const LoginPage = ({ setIsAuthenticated }) => {
                     navigate('/profile');
                 }
             } else {
-                setErrorMessage(data.message);
+                if (data.message === 'Ваш аккаунт заблокирован!') {
+                    setShowBlockedAlert(true); // Показываем кастомный alert
+                } else {
+                    setErrorMessage(data.message); // Устанавливаем ошибку из ответа сервера
+                }
             }
         } catch (err) {
             console.error(err);
             setErrorMessage('Ошибка при отправке данных на сервер.');
         }
+    };
+
+    // Закрытие alert и редирект на VK
+    const handleAlertClose = () => {
+        setShowBlockedAlert(false);
+    };
+
+    // Редирект на страницу техподдержки
+    const handleContactSupport = () => {
+        window.location.href = "https://vk.com/dkarpov2003"; // Перенаправляем на VK
     };
 
     return (
@@ -69,8 +84,20 @@ const LoginPage = ({ setIsAuthenticated }) => {
                     <button type="submit">Войти</button>
                 </form>
 
-                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Отображаем сообщение об ошибке */}
             </section>
+
+            {/* Кастомный alert для заблокированных пользователей */}
+            {showBlockedAlert && (
+                <div className="blocked-alert">
+                    <div className="alert-content">
+                        <h2>Ваш аккаунт заблокирован</h2>
+                        <p>Обратитесь в техподдержку для решения проблемы.</p>
+                        <button onClick={handleContactSupport}>Обратиться</button> {/* Кнопка для обращения в техподдержку */}
+                        <button onClick={handleAlertClose}>Закрыть</button> {/* Кнопка для закрытия alert */}
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

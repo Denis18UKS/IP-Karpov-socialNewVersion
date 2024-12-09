@@ -132,7 +132,7 @@ const upload = multer({ storage });
 
 app.get('/admin/users', verifyToken, verifyAdmin, async (req, res) => {
     try {
-        const [results] = await db.query('SELECT id, username, email, role FROM users');
+        const [results] = await db.query("SELECT id, username, email, role, isBlocked FROM users WHERE role = 'user' ");
         res.status(200).json(results);
     } catch (err) {
         console.error('Ошибка при загрузке пользователей:', err);
@@ -140,20 +140,82 @@ app.get('/admin/users', verifyToken, verifyAdmin, async (req, res) => {
     }
 });
 
+// Блокировка пользователя
+app.patch('/users/:id/block', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Находим пользователя по ID
+        const [users] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        const user = users[0];
+
+        // Проверяем, не заблокирован ли пользователь уже
+        if (user.isBlocked === 'заблокирован') {
+            return res.status(400).json({ message: 'Пользователь уже заблокирован' });
+        }
+
+        // Блокируем пользователя
+        await db.query("UPDATE users SET isBlocked = 'заблокирован' WHERE id = ?", [id]);
+
+        res.status(200).json({ message: 'Пользователь заблокирован' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при блокировке пользователя' });
+    }
+});
+
+// Разблокировка пользователя
+app.patch('/users/:id/unblock', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Находим пользователя по ID
+        const [users] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        const user = users[0];
+
+        // Проверяем, не разблокирован ли уже пользователь
+        if (user.isBlocked === 'активен') {
+            return res.status(400).json({ message: 'Пользователь уже активен' });
+        }
+
+        // Разблокируем пользователя
+        await db.query("UPDATE users SET isBlocked = 'активен' WHERE id = ?", [id]);
+
+        res.status(200).json({ message: 'Пользователь разблокирован' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при разблокировке пользователя' });
+    }
+});
+
 
 
 // Удаление пользователя
-app.delete('/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
-    const userId = req.params.id;
+app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const [result] = await db.query('DELETE FROM users WHERE id = ?', [userId]);
-        if (result.affectedRows === 0) {
+        // Находим пользователя по ID
+        const [users] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+        if (users.length === 0) {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
-        res.json({ message: 'Пользователь удален' });
+
+        // Удаляем пользователя
+        await db.query("DELETE FROM users WHERE id = ?", [id]);
+
+        res.status(200).json({ message: 'Пользователь удалён' });
     } catch (err) {
-        console.error('Ошибка при удалении пользователя:', err);
-        res.status(500).json({ message: 'Ошибка сервера' });
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при удалении пользователя' });
     }
 });
 

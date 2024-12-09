@@ -9,6 +9,7 @@
     "axios": "^1.7.9",
     "chart": "^0.1.2",
     "chart.js": "^4.4.7",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "cheerio": "^1.0.0",
     "date-fns": "^4.1.0",
     "highlight.js": "^11.10.0",

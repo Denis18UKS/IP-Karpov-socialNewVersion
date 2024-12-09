@@ -130,55 +130,96 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-app.get('/admin/users', verifyToken, verifyAdmin, (req, res) => {
-    db.query('SELECT id, username, email, role FROM users', (err, results) => {
-        if (err) {
-            console.error('Ошибка при загрузке пользователей:', err);
-            return res.status(500).json({ message: 'Ошибка сервера' });
-        }
-        res.status(200).json(results); // Возвращаем результат запроса
-    });
+app.get('/admin/users', verifyToken, verifyAdmin, async (req, res) => {
+    try {
+        const [results] = await db.query('SELECT id, username, email, role FROM users');
+        res.status(200).json(results);
+    } catch (err) {
+        console.error('Ошибка при загрузке пользователей:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
+
 
 
 // Удаление пользователя
-app.delete('/admin/users/:id', (req, res) => {
+app.delete('/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
     const userId = req.params.id;
-    db.query('DELETE FROM users WHERE id = ?', [userId], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+    try {
+        const [result] = await db.query('DELETE FROM users WHERE id = ?', [userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
         res.json({ message: 'Пользователь удален' });
-    });
+    } catch (err) {
+        console.error('Ошибка при удалении пользователя:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
 
+
 // Изменение роли пользователя
-app.patch('/admin/users/:id/role', (req, res) => {
+app.patch('/admin/users/:id/role', verifyToken, verifyAdmin, async (req, res) => {
     const { role } = req.body;
     const userId = req.params.id;
 
-    db.query('UPDATE users SET role = ? WHERE id = ?', [role, userId], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+    if (!role || (role !== 'admin' && role !== 'user')) {
+        return res.status(400).json({ message: 'Неверная роль' });
+    }
+
+    try {
+        const [result] = await db.query('UPDATE users SET role = ? WHERE id = ?', [role, userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
         res.json({ message: 'Роль пользователя обновлена' });
-    });
+    } catch (err) {
+        console.error('Ошибка при обновлении роли пользователя:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
 
-// Модерация новостей
-app.patch('/admin/news/:id/status', (req, res) => {
+
+app.patch('/admin/news/:id/status', verifyToken, verifyAdmin, async (req, res) => {
     const { status } = req.body;
     const newsId = req.params.id;
 
-    db.query('UPDATE news SET status = ? WHERE id = ?', [status, newsId], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+    if (!status || !['ожидание', 'принят', 'отклонен'].includes(status)) {
+        return res.status(400).json({ message: 'Неверный статус' });
+    }
+
+    try {
+        const [result] = await db.query('UPDATE news SET status = ? WHERE id = ?', [status, newsId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Новость не найдена' });
+        }
         res.json({ message: 'Статус новости обновлен' });
-    });
+    } catch (err) {
+        console.error('Ошибка при обновлении статуса новости:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
 
+
 // Статистика (по количеству зарегистрированных пользователей)
-app.get('/admin/statistics', (req, res) => {
-    db.query('SELECT COUNT(*) as user_count FROM users', (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
-        res.json(result[0]);
-    });
+app.get('/admin/statistics', verifyToken, verifyAdmin, async (req, res) => {
+    try {
+        const [results] = await db.query(`
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as user_count
+            FROM users
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        `);
+        res.json(results);
+    } catch (err) {
+        console.error('Ошибка при получении статистики:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
+
+
 
 
 app.get('/hackathons', async (req, res) => {
@@ -709,7 +750,7 @@ app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
     try {
         await db.query(
             `INSERT INTO news (title, description, link, image_url, author_id, status, created_at)
-            VALUES (?, ?, ?, ?, ?, 'принят', NOW())`,
+            VALUES (?, ?, ?, ?, ?, 'ожидание', NOW())`,
             [title, description, link, imageUrl, authorId]
         );
         res.status(201).json({ message: "Новость добавлена!" });
@@ -746,7 +787,7 @@ app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
     try {
         await db.query(
             `INSERT INTO posts (title, description, image_url, author_id, status, created_at)
-            VALUES (?, ?, ?, ?, 'принят', NOW())`,
+            VALUES (?, ?, ?, ?, 'ожидание', NOW())`,
             [title, description, imageUrl, authorId]
         );
         res.status(201).json({ message: "Пост создан!" });

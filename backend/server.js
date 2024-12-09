@@ -79,20 +79,31 @@ const generateToken = (user) => {
 
 // Middleware для проверки токена
 const verifyToken = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', ''); // Извлекаем токен
+    const token = req.header('Authorization')?.replace('Bearer ', '');
     if (!token) {
         return res.status(401).json({ message: 'Токен не предоставлен' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Проверяем токен
-        req.user = decoded; // Сохраняем данные пользователя
-        next(); // Переходим к следующему middleware
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded user:', decoded); // Логируем декодированный токен
+        req.user = decoded;
+        next();
     } catch (error) {
         console.error('Ошибка токена:', error);
         return res.status(401).json({ message: 'Неверный токен' });
     }
 };
+
+
+const verifyAdmin = (req, res, next) => {
+    console.log('User role:', req.user.role); // Логируем роль пользователя
+    if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Доступ запрещен. Вы не администратор.' });
+    }
+    next();
+};
+
 
 
 
@@ -117,6 +128,57 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+
+app.get('/admin/users', verifyToken, verifyAdmin, (req, res) => {
+    db.query('SELECT id, username, email, role FROM users', (err, results) => {
+        if (err) {
+            console.error('Ошибка при загрузке пользователей:', err);
+            return res.status(500).json({ message: 'Ошибка сервера' });
+        }
+        res.status(200).json(results); // Возвращаем результат запроса
+    });
+});
+
+
+// Удаление пользователя
+app.delete('/admin/users/:id', (req, res) => {
+    const userId = req.params.id;
+    db.query('DELETE FROM users WHERE id = ?', [userId], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+        res.json({ message: 'Пользователь удален' });
+    });
+});
+
+// Изменение роли пользователя
+app.patch('/admin/users/:id/role', (req, res) => {
+    const { role } = req.body;
+    const userId = req.params.id;
+
+    db.query('UPDATE users SET role = ? WHERE id = ?', [role, userId], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+        res.json({ message: 'Роль пользователя обновлена' });
+    });
+});
+
+// Модерация новостей
+app.patch('/admin/news/:id/status', (req, res) => {
+    const { status } = req.body;
+    const newsId = req.params.id;
+
+    db.query('UPDATE news SET status = ? WHERE id = ?', [status, newsId], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+        res.json({ message: 'Статус новости обновлен' });
+    });
+});
+
+// Статистика (по количеству зарегистрированных пользователей)
+app.get('/admin/statistics', (req, res) => {
+    db.query('SELECT COUNT(*) as user_count FROM users', (err, result) => {
+        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+        res.json(result[0]);
+    });
+});
 
 
 app.get('/hackathons', async (req, res) => {
@@ -254,7 +316,6 @@ const fetchRepositories = async (githubUsername) => {
 
 
 
-// Авторизация пользователя
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -263,46 +324,33 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        // Поиск пользователя по email
-        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const [users] = await db.query('SELECT id, email, username, role, password FROM users WHERE email = ?', [email]);
         if (users.length === 0) {
             return res.status(400).json({ message: 'Пользователь не найден!' });
         }
 
-        // Проверка пароля
         const validPassword = await bcrypt.compare(password, users[0].password);
         if (!validPassword) {
             return res.status(400).json({ message: 'Неверный пароль!' });
         }
 
-        // Проверяем, есть ли репозитории в базе данных
-        const [repos] = await db.query('SELECT * FROM repositories WHERE user_id = ?', [users[0].id]);
+        const token = jwt.sign(
+            {
+                id: users[0].id,
+                email: users[0].email,
+                username: users[0].username,
+                role: users[0].role || 'user'
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES }
+        );
 
-        // Если репозиториев нет, загружаем их с GitHub и сохраняем
-        if (repos.length === 0 && users[0].github_username) {
-            const repositories = await fetchRepositories(users[0].github_username);
-
-            const lastSynced = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-            for (const repo of repositories) {
-                console.log('Сохраняем репозиторий при авторизации:', repo);  // Логирование каждого репозитория
-                await db.query(
-                    'INSERT INTO repositories (user_id, repo_name, repo_url, last_synced) VALUES (?, ?, ?, ?)',
-                    [users[0].id, repo.name, repo.html_url, lastSynced]
-                );
-            }
-        }
-
-        // Генерация JWT
-        const token = generateToken({ id: users[0].id, email: users[0].email, username: users[0].username });
-
-        // Возвращаем токен вместе с информацией о пользователе
         res.json({
             token,
             user: {
                 id: users[0].id,
                 username: users[0].username,
-                role: users[0].role || 'user', // Убедитесь, что у вас есть поле "role" в таблице "users"
+                role: users[0].role || 'user',
             },
         });
     } catch (err) {

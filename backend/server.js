@@ -55,7 +55,7 @@ app.use((err, req, res, next) => {
 app.use(cors({
     origin: '*',  // Разрешаем доступ с любых источников
     optionsSuccessStatus: 200,  // Для старых браузеров
-    methods: 'GET,POST,PUT,DELETE',  // Разрешенные методы
+    methods: 'GET,POST, PATCH, PUT,DELETE',  // Разрешенные методы
     allowedHeaders: 'Content-Type,Authorization',
     credentials: true, // Разрешенные заголовки
 }));
@@ -157,29 +157,6 @@ app.delete('/admin/users/:id', verifyToken, verifyAdmin, async (req, res) => {
     }
 });
 
-
-// Изменение роли пользователя
-app.patch('/admin/users/:id/role', verifyToken, verifyAdmin, async (req, res) => {
-    const { role } = req.body;
-    const userId = req.params.id;
-
-    if (!role || (role !== 'admin' && role !== 'user')) {
-        return res.status(400).json({ message: 'Неверная роль' });
-    }
-
-    try {
-        const [result] = await db.query('UPDATE users SET role = ? WHERE id = ?', [role, userId]);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Пользователь не найден' });
-        }
-        res.json({ message: 'Роль пользователя обновлена' });
-    } catch (err) {
-        console.error('Ошибка при обновлении роли пользователя:', err);
-        res.status(500).json({ message: 'Ошибка сервера' });
-    }
-});
-
-
 app.patch('/admin/news/:id/status', verifyToken, verifyAdmin, async (req, res) => {
     const { status } = req.body;
     const newsId = req.params.id;
@@ -199,6 +176,27 @@ app.patch('/admin/news/:id/status', verifyToken, verifyAdmin, async (req, res) =
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+
+app.patch('/admin/posts/:id/status', verifyToken, verifyAdmin, async (req, res) => {
+    const { status } = req.body;
+    const postId = req.params.id;
+
+    if (!status || !['ожидание', 'принят', 'отклонен'].includes(status)) {
+        return res.status(400).json({ message: 'Неверный статус' });
+    }
+
+    try {
+        const [result] = await db.query('UPDATE posts SET status = ? WHERE id = ?', [status, postId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Пост не найден' });
+        }
+        res.json({ message: 'Статус поста обновлен' });
+    } catch (err) {
+        console.error('Ошибка при обновлении статуса поста:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
 
 
 // Статистика (по количеству зарегистрированных пользователей)
@@ -726,18 +724,38 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
 // Получение всех новостей
 app.get("/news", async (req, res) => {
     try {
-        const [forums] = await db.query(`
+        const [news] = await db.query(`
             SELECT n.id, n.title, n.description, n.status, n.link, n.image_url, n.author_id, n.created_at, u.username AS user
             FROM news n
             JOIN users u ON n.author_id = u.id
             WHERE n.status = "принят"
         `);
-        res.status(200).json(forums);
+        res.status(200).json(news);
     } catch (error) {
         console.error("Ошибка при получении новостей:", error);
         res.status(500).json({ message: "Ошибка при получении новостей" });
     }
 });
+
+// Получение всех новостей для администраторов
+app.get("/admin/news", verifyToken, verifyAdmin, async (req, res) => {
+    console.log('Получен запрос на новости');
+    try {
+        const [news] = await db.query(`
+            SELECT n.*, u.username AS user
+            FROM news n
+            JOIN users u ON n.author_id = u.id
+            ORDER BY created_at DESC
+        `);
+        console.log('Новости получены:', news);
+        res.status(200).json(news);
+    } catch (error) {
+        console.error("Ошибка при получении новостей:", error);
+        res.status(500).json({ message: "Ошибка при получении новостей" });
+    }
+});
+
+
 
 // Маршрут для добавления новости
 app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
@@ -760,6 +778,22 @@ app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
     }
 });
 
+app.delete('/admin/news/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query(`DELETE FROM news WHERE id = ?`, [id]);
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Новость удалена успешно' });
+        } else {
+            res.status(404).json({ message: 'Новость не найдена' });
+        }
+    } catch (error) {
+        console.error("Ошибка при удалении новости:", error);
+        res.status(500).json({ message: 'Ошибка при удалении новости' });
+    }
+});
+
+
 
 // Получение всех постов
 app.get("/posts", async (req, res) => {
@@ -776,6 +810,23 @@ app.get("/posts", async (req, res) => {
         res.status(500).json({ message: "Ошибка при получении постов" });
     }
 });
+
+// Получение всех постов для администраторов
+app.get("/admin/posts", verifyToken, verifyAdmin, async (req, res) => {
+    try {
+        const [posts] = await db.query(`
+            SELECT p.*, u.username AS user
+            FROM posts p
+            JOIN users u ON p.author_id = u.id
+            ORDER BY created_at DESC
+        `);
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Ошибка при получении постов:", error);
+        res.status(500).json({ message: "Ошибка при получении постов" });
+    }
+});
+
 
 app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
     const { title, description } = req.body;
@@ -797,6 +848,20 @@ app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
     }
 });
 
+app.delete('/admin/posts/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query(`DELETE FROM posts WHERE id = ?`, [id]);
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Пост успешно удален' });
+        } else {
+            res.status(404).json({ message: 'Пост не найден' });
+        }
+    } catch (error) {
+        console.error("Ошибка при удалении поста:", error);
+        res.status(500).json({ message: 'Ошибка при удалении поста' });
+    }
+});
 
 // Получение всех вопросов
 app.get("/forums", async (req, res) => {

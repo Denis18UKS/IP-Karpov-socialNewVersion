@@ -120,7 +120,7 @@ const HomePage = ({ isAuthenticated }) => {
                 {/* Проверяем, если картинка существует, то отображаем ее */}
                 {item.image_url && item.image_url !== 'null' ? (
                     <img
-                        src={`http://localhost:5000${item.image_url}`}
+                        src={`http://localhost:5000/${item.image_url}`}
                         alt={item.title}
                     />
                 ) : (

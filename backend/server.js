@@ -425,9 +425,13 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const [users] = await db.query('SELECT id, email, username, role, password FROM users WHERE email = ?', [email]);
+        const [users] = await db.query('SELECT id, email, username, role, password, isBlocked FROM users WHERE email = ?', [email]);
         if (users.length === 0) {
             return res.status(400).json({ message: 'Пользователь не найден!' });
+        }
+
+        if (users[0].isBlocked === 'заблокирован') {
+            return res.status(403).json({ message: 'Ваш аккаунт заблокирован!' }); // Новый статус для заблокированных пользователей
         }
 
         const validPassword = await bcrypt.compare(password, users[0].password);
@@ -440,7 +444,7 @@ app.post('/login', async (req, res) => {
                 id: users[0].id,
                 email: users[0].email,
                 username: users[0].username,
-                role: users[0].role || 'user'
+                role: users[0].role || 'user',
             },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES }
@@ -459,6 +463,7 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Ошибка на сервере' });
     }
 });
+
 
 
 

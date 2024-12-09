@@ -18,8 +18,6 @@ main {
     transition: transform 0.3s;
 }
 
-
-
 .hero h2:hover {
     transform: scale(1.05);
 }
@@ -29,7 +27,6 @@ main {
     color: #555;
 }
 
-/* Стиль для секции новостей и постов */
 /* Стиль для секции новостей и постов */
 .cards-container {
     display: grid;
@@ -44,9 +41,7 @@ main {
     border-radius: 8px;
     max-width: 100%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition:
-        transform 0.3s,
-        box-shadow 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .card:hover {
@@ -100,9 +95,7 @@ button {
     color: white;
     font-size: 1rem;
     cursor: pointer;
-    transition:
-        background-color 0.3s,
-        transform 0.3s;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 .add-button-news {

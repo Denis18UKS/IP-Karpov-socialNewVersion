@@ -274,6 +274,8 @@ nav a:hover::after {
         z-index: 100;
         overflow-y: auto;
         /* Включаем вертикальный скроллинг */
+        pointer-events: none;
+        /* Отключаем взаимодействие */
     }
 
     .navigation.open div {
@@ -282,10 +284,14 @@ nav a:hover::after {
     }
 
     .navigation.open {
+        display: flex;
+        flex-direction: column;
         top: 6%;
         position: fixed;
         transform: translateY(0);
         opacity: 1;
+        pointer-events: auto;
+        /* Включаем взаимодействие */
     }
 
     nav a {

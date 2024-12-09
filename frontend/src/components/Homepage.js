@@ -109,6 +109,12 @@ const HomePage = ({ isAuthenticated }) => {
             .finally(() => setLoading(false));
     };
 
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', options);
+    };
+
     const renderCards = (items, showMore, type) => {
         if (items.length === 0) {
             return <p className="no-items">{type === 'news' ? 'Нет новостей' : 'Нет постов'}</p>;
@@ -118,7 +124,7 @@ const HomePage = ({ isAuthenticated }) => {
         return visibleItems.map((item) => (
             <div key={item.id} className="card">
                 {item.image_url && item.image_url !== 'null' ? (
-                    <img src={`http://localhost:5000/${item.image_url}`} alt={item.title} />
+                    <img src={`http://localhost:5000${item.image_url}`} alt={item.title} />
                 ) : (
                     <div className="no-image">Нет изображения</div>
                 )}
@@ -129,10 +135,14 @@ const HomePage = ({ isAuthenticated }) => {
                         Подробнее
                     </a>
                 )}
-                <span>Автор: {item.user}</span>
+                <div className="card-footer">
+                    <span className="author">Автор: {item.user}</span>
+                    <span className="date">{formatDate(item.created_at)}</span>
+                </div>
             </div>
         ));
     };
+
 
 
     return (

@@ -6,7 +6,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const navigate = useNavigate(); // Для редиректа на главную страницу или панель пользователя после авторизации
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -17,10 +17,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    email,
-                    password,
-                }),
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
@@ -31,7 +28,13 @@ const LoginPage = ({ setIsAuthenticated }) => {
                 localStorage.setItem('role', data.user.role);
 
                 setIsAuthenticated(true);
-                navigate('/profile');
+
+                // Перенаправляем в зависимости от роли
+                if (data.user.role === 'admin') {
+                    navigate('/admin/users');
+                } else {
+                    navigate('/profile');
+                }
             } else {
                 setErrorMessage(data.message);
             }
@@ -40,7 +43,6 @@ const LoginPage = ({ setIsAuthenticated }) => {
             setErrorMessage('Ошибка при отправке данных на сервер.');
         }
     };
-
 
     return (
         <main>
@@ -67,7 +69,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
                     <button type="submit">Войти</button>
                 </form>
 
-                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Вывод ошибки, если есть */}
+                {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
             </section>
         </main>
     );

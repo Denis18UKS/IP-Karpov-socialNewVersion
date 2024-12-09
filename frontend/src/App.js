@@ -12,47 +12,59 @@ import XakatonsPage from './components/XakatonsPage';
 import Header from './components/Header';
 import EditProfilePage from './components/EditProfilePage';
 
+import UsersAdminPage from './admin/UsersAdminPage';
+import StatisticsPage from './admin/StatisticsPage';
+import ModerationPage from './admin/ModerationPage';
+
+
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [role, setRole] = useState(null); // Добавлено состояние для роли
 
   useEffect(() => {
-    // Проверяем наличие токена в localStorage при старте приложения
     const token = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('role'); // Получаем роль из localStorage
     if (token) {
-      setIsAuthenticated(true); // Если токен найден, считаем, что пользователь авторизован
+      setIsAuthenticated(true);
+      setRole(storedRole); // Устанавливаем роль
     }
-  }, []); // Пустой массив зависимостей, чтобы выполнить только при монтировании компонента
-
-  const toggleTheme = () => {
-    setIsDarkTheme(!isDarkTheme);
-    document.body.setAttribute('data-theme', isDarkTheme ? 'light' : 'dark');
-  };
+  }, []);
 
   return (
     <Router>
       <Header
         isAuthenticated={isAuthenticated}
         setIsAuthenticated={setIsAuthenticated}
+        role={role} // Передаем роль в Header
       />
       <Routes>
         <Route
           path="/"
-          element={<HomePage isAuthenticated={isAuthenticated} />} // Передаем актуальное состояние авторизации
+          element={<HomePage isAuthenticated={isAuthenticated} />} 
         />
         <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/register" element={<RegisterPage />} />
 
         {isAuthenticated ? (
           <>
-            <Route path="/profile" element={<MyProfilePage />} /> {/* Для отображения вашего профиля */}
-            <Route path="/users/:username" element={<UserProfilePage />} /> {/* Для чужого профиля */}
+            <Route path="/profile" element={<MyProfilePage />} />
+            <Route path="/users/:username" element={<UserProfilePage />} />
             <Route path="/chats" element={<ChatsPage />} />
-            <Route path="/chats/:chatId" element={<ChatsPage />} /> {/* Изменение здесь */}
+            <Route path="/chats/:chatId" element={<ChatsPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/forum" element={<ForumPage />} />
             <Route path="/xakatons" element={<XakatonsPage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
+
+            {/* Администраторские маршруты */}
+            {role === 'admin' && (
+              <>
+                <Route path="/admin/users" element={<UsersAdminPage />} />
+                <Route path="/admin/moderation" element={<ModerationPage />} />
+                <Route path="/admin/statistics" element={<StatisticsPage />} />
+              </>
+            )}
           </>
         ) : (
           <Route path="*" element={<HomePage isAuthenticated={isAuthenticated} />} />
@@ -63,3 +75,4 @@ function App() {
 }
 
 export default App;
+

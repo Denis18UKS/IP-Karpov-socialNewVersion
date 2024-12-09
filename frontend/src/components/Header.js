@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import './css-v2/Header.css';
 
-const Header = ({ isAuthenticated, setIsAuthenticated }) => {
+const Header = ({ isAuthenticated, setIsAuthenticated, role }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleLogout = () => {
@@ -55,6 +55,22 @@ const Header = ({ isAuthenticated, setIsAuthenticated }) => {
                             <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
                                 <Link to="/xakatons" onClick={() => setIsMenuOpen(false)}>IT-Хакатоны</Link>
                             </CSSTransition>
+                            
+                            {/* Для администратора */}
+                            {role === 'admin' && (
+                                <>
+                                    <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                        <Link to="/admin/users" onClick={() => setIsMenuOpen(false)}>Управление пользователями</Link>
+                                    </CSSTransition>
+                                    <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                        <Link to="/admin/moderation" onClick={() => setIsMenuOpen(false)}>Модерация контента</Link>
+                                    </CSSTransition>
+                                    <CSSTransition in={true} timeout={500} classNames="nav-link" unmountOnExit>
+                                        <Link to="/admin/statistics" onClick={() => setIsMenuOpen(false)}>Статистика</Link>
+                                    </CSSTransition>
+                                </>
+                            )}
+
                             <button className="exit-btn" onClick={handleLogout}>Выйти</button>
                         </>
                     )}

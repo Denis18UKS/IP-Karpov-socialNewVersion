@@ -55,7 +55,7 @@ app.use((err, req, res, next) => {
 app.use(cors({
     origin: '*',  // Разрешаем доступ с любых источников
     optionsSuccessStatus: 200,  // Для старых браузеров
-    methods: 'GET,POST,PUT,DELETE',  // Разрешенные методы
+    methods: 'GET,POST, PATCH, PUT,DELETE',  // Разрешенные методы
     allowedHeaders: 'Content-Type,Authorization',
     credentials: true, // Разрешенные заголовки
 }));
@@ -130,55 +130,156 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-app.get('/admin/users', verifyToken, verifyAdmin, (req, res) => {
-    db.query('SELECT id, username, email, role FROM users', (err, results) => {
-        if (err) {
-            console.error('Ошибка при загрузке пользователей:', err);
-            return res.status(500).json({ message: 'Ошибка сервера' });
-        }
-        res.status(200).json(results); // Возвращаем результат запроса
-    });
+app.get('/admin/users', verifyToken, verifyAdmin, async (req, res) => {
+    try {
+        const [results] = await db.query("SELECT id, username, email, role, isBlocked FROM users WHERE role = 'user' ");
+        res.status(200).json(results);
+    } catch (err) {
+        console.error('Ошибка при загрузке пользователей:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
+
+// Блокировка пользователя
+app.patch('/users/:id/block', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Находим пользователя по ID
+        const [users] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        const user = users[0];
+
+        // Проверяем, не заблокирован ли пользователь уже
+        if (user.isBlocked === 'заблокирован') {
+            return res.status(400).json({ message: 'Пользователь уже заблокирован' });
+        }
+
+        // Блокируем пользователя
+        await db.query("UPDATE users SET isBlocked = 'заблокирован' WHERE id = ?", [id]);
+
+        res.status(200).json({ message: 'Пользователь заблокирован' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при блокировке пользователя' });
+    }
+});
+
+// Разблокировка пользователя
+app.patch('/users/:id/unblock', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Находим пользователя по ID
+        const [users] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        const user = users[0];
+
+        // Проверяем, не разблокирован ли уже пользователь
+        if (user.isBlocked === 'активен') {
+            return res.status(400).json({ message: 'Пользователь уже активен' });
+        }
+
+        // Разблокируем пользователя
+        await db.query("UPDATE users SET isBlocked = 'активен' WHERE id = ?", [id]);
+
+        res.status(200).json({ message: 'Пользователь разблокирован' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при разблокировке пользователя' });
+    }
+});
+
 
 
 // Удаление пользователя
-app.delete('/admin/users/:id', (req, res) => {
-    const userId = req.params.id;
-    db.query('DELETE FROM users WHERE id = ?', [userId], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
-        res.json({ message: 'Пользователь удален' });
-    });
+app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Находим пользователя по ID
+        const [users] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        // Удаляем пользователя
+        await db.query("DELETE FROM users WHERE id = ?", [id]);
+
+        res.status(200).json({ message: 'Пользователь удалён' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Ошибка при удалении пользователя' });
+    }
 });
 
-// Изменение роли пользователя
-app.patch('/admin/users/:id/role', (req, res) => {
-    const { role } = req.body;
-    const userId = req.params.id;
-
-    db.query('UPDATE users SET role = ? WHERE id = ?', [role, userId], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
-        res.json({ message: 'Роль пользователя обновлена' });
-    });
-});
-
-// Модерация новостей
-app.patch('/admin/news/:id/status', (req, res) => {
+app.patch('/admin/news/:id/status', verifyToken, verifyAdmin, async (req, res) => {
     const { status } = req.body;
     const newsId = req.params.id;
 
-    db.query('UPDATE news SET status = ? WHERE id = ?', [status, newsId], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
+    if (!status || !['ожидание', 'принят', 'отклонен'].includes(status)) {
+        return res.status(400).json({ message: 'Неверный статус' });
+    }
+
+    try {
+        const [result] = await db.query('UPDATE news SET status = ? WHERE id = ?', [status, newsId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Новость не найдена' });
+        }
         res.json({ message: 'Статус новости обновлен' });
-    });
+    } catch (err) {
+        console.error('Ошибка при обновлении статуса новости:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
 
-// Статистика (по количеству зарегистрированных пользователей)
-app.get('/admin/statistics', (req, res) => {
-    db.query('SELECT COUNT(*) as user_count FROM users', (err, result) => {
-        if (err) return res.status(500).json({ message: 'Ошибка сервера' });
-        res.json(result[0]);
-    });
+app.patch('/admin/posts/:id/status', verifyToken, verifyAdmin, async (req, res) => {
+    const { status } = req.body;
+    const postId = req.params.id;
+
+    if (!status || !['ожидание', 'принят', 'отклонен'].includes(status)) {
+        return res.status(400).json({ message: 'Неверный статус' });
+    }
+
+    try {
+        const [result] = await db.query('UPDATE posts SET status = ? WHERE id = ?', [status, postId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Пост не найден' });
+        }
+        res.json({ message: 'Статус поста обновлен' });
+    } catch (err) {
+        console.error('Ошибка при обновлении статуса поста:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
 });
+
+
+
+// Статистика (по количеству зарегистрированных пользователей)
+app.get('/admin/statistics', verifyToken, verifyAdmin, async (req, res) => {
+    try {
+        const [results] = await db.query(`
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as user_count
+            FROM users
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        `);
+        res.json(results);
+    } catch (err) {
+        console.error('Ошибка при получении статистики:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
 
 
 app.get('/hackathons', async (req, res) => {
@@ -685,18 +786,38 @@ app.get('/repositories/:github_username', verifyToken, async (req, res) => {
 // Получение всех новостей
 app.get("/news", async (req, res) => {
     try {
-        const [forums] = await db.query(`
+        const [news] = await db.query(`
             SELECT n.id, n.title, n.description, n.status, n.link, n.image_url, n.author_id, n.created_at, u.username AS user
             FROM news n
             JOIN users u ON n.author_id = u.id
             WHERE n.status = "принят"
         `);
-        res.status(200).json(forums);
+        res.status(200).json(news);
     } catch (error) {
         console.error("Ошибка при получении новостей:", error);
         res.status(500).json({ message: "Ошибка при получении новостей" });
     }
 });
+
+// Получение всех новостей для администраторов
+app.get("/admin/news", verifyToken, verifyAdmin, async (req, res) => {
+    console.log('Получен запрос на новости');
+    try {
+        const [news] = await db.query(`
+            SELECT n.*, u.username AS user
+            FROM news n
+            JOIN users u ON n.author_id = u.id
+            ORDER BY created_at DESC
+        `);
+        console.log('Новости получены:', news);
+        res.status(200).json(news);
+    } catch (error) {
+        console.error("Ошибка при получении новостей:", error);
+        res.status(500).json({ message: "Ошибка при получении новостей" });
+    }
+});
+
+
 
 // Маршрут для добавления новости
 app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
@@ -709,7 +830,7 @@ app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
     try {
         await db.query(
             `INSERT INTO news (title, description, link, image_url, author_id, status, created_at)
-            VALUES (?, ?, ?, ?, ?, 'принят', NOW())`,
+            VALUES (?, ?, ?, ?, ?, 'ожидание', NOW())`,
             [title, description, link, imageUrl, authorId]
         );
         res.status(201).json({ message: "Новость добавлена!" });
@@ -718,6 +839,22 @@ app.post("/news", verifyToken, upload.single("file"), async (req, res) => {
         res.status(500).json({ message: "Не удалось добавить новость." });
     }
 });
+
+app.delete('/admin/news/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query(`DELETE FROM news WHERE id = ?`, [id]);
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Новость удалена успешно' });
+        } else {
+            res.status(404).json({ message: 'Новость не найдена' });
+        }
+    } catch (error) {
+        console.error("Ошибка при удалении новости:", error);
+        res.status(500).json({ message: 'Ошибка при удалении новости' });
+    }
+});
+
 
 
 // Получение всех постов
@@ -736,6 +873,23 @@ app.get("/posts", async (req, res) => {
     }
 });
 
+// Получение всех постов для администраторов
+app.get("/admin/posts", verifyToken, verifyAdmin, async (req, res) => {
+    try {
+        const [posts] = await db.query(`
+            SELECT p.*, u.username AS user
+            FROM posts p
+            JOIN users u ON p.author_id = u.id
+            ORDER BY created_at DESC
+        `);
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Ошибка при получении постов:", error);
+        res.status(500).json({ message: "Ошибка при получении постов" });
+    }
+});
+
+
 app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
     const { title, description } = req.body;
     const file = req.file;
@@ -746,7 +900,7 @@ app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
     try {
         await db.query(
             `INSERT INTO posts (title, description, image_url, author_id, status, created_at)
-            VALUES (?, ?, ?, ?, 'принят', NOW())`,
+            VALUES (?, ?, ?, ?, 'ожидание', NOW())`,
             [title, description, imageUrl, authorId]
         );
         res.status(201).json({ message: "Пост создан!" });
@@ -756,6 +910,20 @@ app.post("/posts", verifyToken, upload.single("file"), async (req, res) => {
     }
 });
 
+app.delete('/admin/posts/:id', verifyToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query(`DELETE FROM posts WHERE id = ?`, [id]);
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Пост успешно удален' });
+        } else {
+            res.status(404).json({ message: 'Пост не найден' });
+        }
+    } catch (error) {
+        console.error("Ошибка при удалении поста:", error);
+        res.status(500).json({ message: 'Ошибка при удалении поста' });
+    }
+});
 
 // Получение всех вопросов
 app.get("/forums", async (req, res) => {

@@ -69,24 +69,41 @@ const ModerationPage = () => {
 
 
     const handleStatusChange = async (id, type, status) => {
-        await fetch(`http://localhost:5000/admin/${type}/${id}/status`, {
-            method: "PATCH",
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ status }),
-        });
-        if (type === "news") {
-            fetch("http://localhost:5000/admin/news")
-                .then(response => response.json())
-                .then(data => setNews(data));
-        } else {
-            fetch("http://localhost:5000/admin/posts")
-                .then(response => response.json())
-                .then(data => setPosts(data));
+        try {
+            // Отправляем запрос для изменения статуса
+            const response = await fetch(`http://localhost:5000/admin/${type}/${id}/status`, {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ status }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка при изменении статуса');
+            }
+
+            // Обновляем состояние сразу, чтобы перерисовать страницу без дополнительного запроса
+            if (type === "news") {
+                setNews((prevNews) =>
+                    prevNews.map((item) =>
+                        item.id === id ? { ...item, status } : item
+                    )
+                );
+            } else {
+                setPosts((prevPosts) =>
+                    prevPosts.map((item) =>
+                        item.id === id ? { ...item, status } : item
+                    )
+                );
+            }
+        } catch (error) {
+            console.error("Ошибка при изменении статуса:", error);
+            alert('Произошла ошибка при изменении статуса. Попробуйте снова.');
         }
     };
+
 
     const renderModerationCards = (items, type) => {
         if (!Array.isArray(items) || items.length === 0) {

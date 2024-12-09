@@ -109,22 +109,18 @@ const HomePage = ({ isAuthenticated }) => {
             .finally(() => setLoading(false));
     };
 
-    const renderCards = (items, showMore) => {
+    const renderCards = (items, showMore, type) => {
         if (items.length === 0) {
-            return <p className="no-items">Нет данных</p>;
+            return <p className="no-items">{type === 'news' ? 'Нет новостей' : 'Нет постов'}</p>;
         }
-        const visibleItems = showMore ? items : items.slice(0, 6); // Показываем 6 первых карточек или все
+        const visibleItems = showMore ? items : items.slice(0, 6);
 
         return visibleItems.map((item) => (
             <div key={item.id} className="card">
-                {/* Проверяем, если картинка существует, то отображаем ее */}
                 {item.image_url && item.image_url !== 'null' ? (
-                    <img
-                        src={`http://localhost:5000/${item.image_url}`}
-                        alt={item.title}
-                    />
+                    <img src={`http://localhost:5000/${item.image_url}`} alt={item.title} />
                 ) : (
-                    <div className="no-image">Нет изображения</div> // Блок с текстом или можно оставить пустым
+                    <div className="no-image">Нет изображения</div>
                 )}
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
@@ -139,41 +135,12 @@ const HomePage = ({ isAuthenticated }) => {
     };
 
 
-
-    const handleNewsFormChange = (e) => {
-        setNewsForm({ ...newsForm, [e.target.name]: e.target.value });
-    };
-
-    const handlePostFormChange = (e) => {
-        setPostForm({ ...postForm, [e.target.name]: e.target.value });
-    };
-
-    const handleClickOutside = (e) => {
-        if (e.target.classList.contains('modal')) {
-            setIsNewsModalOpen(false);
-            setIsPostModalOpen(false);
-        }
-    };
-
-    useEffect(() => {
-        document.addEventListener('click', handleClickOutside);
-        return () => {
-            document.removeEventListener('click', handleClickOutside);
-        };
-    }, []);
-
     return (
         <div>
             <main>
-                <section className="hero">
-                    <h2>Добро пожаловать на наш проект!</h2>
-                    <p>Здесь вы можете авторизоваться, зарегистрироваться и просмотреть Мой Профиль.</p>
-                </section>
-
-                {/* Новостной блок */}
                 <section className="news-section">
                     <h2>Новости</h2>
-                    <div className="cards-container news-cards">{renderCards(news, showMoreNews)}</div>
+                    <div className="cards-container news-cards">{renderCards(news, showMoreNews, 'news')}</div>
                     {news.length > 6 && (
                         <button onClick={toggleShowMoreNews}>
                             {showMoreNews ? "Скрыть" : "Показать больше"}
@@ -186,10 +153,9 @@ const HomePage = ({ isAuthenticated }) => {
                     )}
                 </section>
 
-                {/* Постовый блок */}
                 <section className="posts-section">
                     <h2>Посты</h2>
-                    <div className="cards-container posts-cards">{renderCards(posts, showMorePosts)}</div>
+                    <div className="cards-container posts-cards">{renderCards(posts, showMorePosts, 'posts')}</div>
                     {posts.length > 6 && (
                         <button onClick={toggleShowMorePosts}>
                             {showMorePosts ? "Скрыть" : "Показать больше"}
@@ -201,13 +167,14 @@ const HomePage = ({ isAuthenticated }) => {
                         </button>
                     )}
                 </section>
+
             </main>
 
             <footer>
                 <p>&copy; 2024 IT-BIRD. Все права защищены.</p>
             </footer>
 
-            {/* Модальные окна для новостей и постов */}
+            {/* Модальные окна */}
             {isNewsModalOpen && (
                 <div className="modal">
                     <div className="modal-content">
@@ -216,13 +183,13 @@ const HomePage = ({ isAuthenticated }) => {
                             type="text"
                             name="title"
                             value={newsForm.title}
-                            onChange={handleNewsFormChange}
+                            onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
                             placeholder="Название"
                         />
                         <textarea
                             name="description"
                             value={newsForm.description}
-                            onChange={handleNewsFormChange}
+                            onChange={(e) => setNewsForm({ ...newsForm, description: e.target.value })}
                             placeholder="Описание"
                         />
                         <input
@@ -235,7 +202,7 @@ const HomePage = ({ isAuthenticated }) => {
                             type="text"
                             name="link"
                             value={newsForm.link}
-                            onChange={handleNewsFormChange}
+                            onChange={(e) => setNewsForm({ ...newsForm, link: e.target.value })}
                             placeholder="Ссылка"
                         />
                         <button onClick={submitNewsForm} disabled={loading}>
@@ -254,13 +221,13 @@ const HomePage = ({ isAuthenticated }) => {
                             type="text"
                             name="title"
                             value={postForm.title}
-                            onChange={handlePostFormChange}
+                            onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
                             placeholder="Название"
                         />
                         <textarea
                             name="description"
                             value={postForm.description}
-                            onChange={handlePostFormChange}
+                            onChange={(e) => setPostForm({ ...postForm, description: e.target.value })}
                             placeholder="Описание"
                         />
                         <input

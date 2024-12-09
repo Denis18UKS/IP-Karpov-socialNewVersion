@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { ru } from 'date-fns/locale';
+import { format } from 'date-fns'; // Импортируем функцию для форматирования дат
 
 // Регистрация компонентов Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, TimeScale);
@@ -41,7 +42,11 @@ const StatisticsPage = () => {
 
     // Формируем данные для диаграммы
     const data = {
-        labels: statistics.map((item) => item.date), // Даты для оси X
+        labels: statistics.map((item) => {
+            const date = new Date(item.date);
+            // Форматируем дату как "1 декабря 2024"
+            return format(date, 'd MMMM yyyy', { locale: ru });
+        }), // Полные даты для оси X
         datasets: [
             {
                 label: 'Количество зарегистрированных пользователей',
@@ -60,19 +65,10 @@ const StatisticsPage = () => {
         maintainAspectRatio: false, // Позволяет задавать высоту и ширину вручную
         scales: {
             x: {
-                type: 'time',
-                time: {
-                    unit: 'month', // Группируем по месяцам
-                    tooltipFormat: 'MMM yyyy',
-                },
-                adapters: {
-                    date: {
-                        locale: ru, // Устанавливаем русский язык для дат
-                    },
-                },
+                type: 'category', // Категориальная ось для дат
                 title: {
                     display: true,
-                    text: 'Месяцы',
+                    text: 'Дата',
                     font: {
                         size: 14,
                         weight: 'bold',
@@ -110,7 +106,7 @@ const StatisticsPage = () => {
             },
             title: {
                 display: true,
-                text: 'Регистрация пользователей по месяцам',
+                text: 'Регистрация пользователей по дням',
                 font: {
                     size: 16,
                     weight: 'bold',
@@ -121,10 +117,12 @@ const StatisticsPage = () => {
     };
 
     return (
-        <div style={{ width: '90%', maxWidth: '800px', margin: '0 auto', height: '500px' }}>
-            <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Статистика пользователей</h2>
-            <Bar data={data} options={options} />
-        </div>
+        <main>
+            <div style={{ width: '90%', maxWidth: '800px', margin: '0 auto', height: '500px' }}>
+                <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#ff6f91' }}>Статистика пользователей</h2>
+                <Bar data={data} options={options} />
+            </div>
+        </main>
     );
 };
 

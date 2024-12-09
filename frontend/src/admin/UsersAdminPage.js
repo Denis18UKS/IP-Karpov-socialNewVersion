@@ -27,21 +27,23 @@ const UsersAdminPage = () => {
     }, []);
 
     return (
-        <div>
-            <h2>Управление пользователями</h2>
-            {error ? (
-                <p style={{ color: 'red' }}>{error}</p>
-            ) : (
-                <ul>
-                    {users.map((user) => (
-                        <li key={user.id}>
-                            <p>{user.username} ({user.email})</p>
-                            {/* Добавьте функциональность управления */}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
+        <main>
+            <div className='users-management'>
+                <h2>Управление пользователями</h2>
+                {error ? (
+                    <p style={{ color: 'red' }}>{error}</p>
+                ) : (
+                    <ul>
+                        {users.map((user) => (
+                            <li key={user.id}>
+                                <p>{user.username} ({user.email})</p>
+                                {/* Добавьте функциональность управления */}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </main>
     );
 };
 

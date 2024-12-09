@@ -90,7 +90,7 @@ const ModerationPage = () => {
 
     const renderModerationCards = (items, type) => {
         if (!Array.isArray(items) || items.length === 0) {
-            return <p className="no-items">Нет данных для модерации</p>;
+            return <p className="no-items">{type === 'news' ? 'Нет новостей для модерации' : 'Нет постов для модерации'}</p>;
         }
 
         return items.map((item) => (
@@ -136,6 +136,7 @@ const ModerationPage = () => {
             </div>
         ));
     };
+
 
 
 

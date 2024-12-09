@@ -66,8 +66,6 @@ const ModerationPage = () => {
         }
     };
 
-
-
     const handleStatusChange = async (id, type, status) => {
         try {
             // Отправляем запрос для изменения статуса
@@ -104,6 +102,11 @@ const ModerationPage = () => {
         }
     };
 
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', options);
+    };
 
     const renderModerationCards = (items, type) => {
         if (!Array.isArray(items) || items.length === 0) {
@@ -124,6 +127,7 @@ const ModerationPage = () => {
                 <p>{item.description}</p>
                 <p><strong>Автор:</strong> {item.user}</p>
                 <p><strong>Статус:</strong> {item.status}</p>
+                <p><strong>Дата создания:</strong> {formatDate(item.created_at)}</p> {/* Добавлено поле с датой */}
                 <div className="moderation-buttons">
                     {item.status === "ожидание" && (
                         <>
@@ -141,7 +145,7 @@ const ModerationPage = () => {
                             </button>
                         </>
                     )}
-                    {item.status === "отклонен" && (
+                    {item.status !== "ожидание" && (
                         <button
                             className="delete-btn"
                             onClick={() => handleDelete(item.id, type)}
@@ -153,9 +157,6 @@ const ModerationPage = () => {
             </div>
         ));
     };
-
-
-
 
     return (
         <div>

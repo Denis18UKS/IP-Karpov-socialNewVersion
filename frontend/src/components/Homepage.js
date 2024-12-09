@@ -47,6 +47,12 @@ const HomePage = ({ isAuthenticated }) => {
     const toggleShowMorePosts = () => setShowMorePosts(!showMorePosts);
 
     const submitNewsForm = () => {
+        // Проверяем, что обязательные поля заполнены
+        if (!newsForm.title || !newsForm.description || !newsForm.link) {
+            alert("Пожалуйста, заполните все обязательные поля!");
+            return;
+        }
+
         setLoading(true);
         const formData = new FormData();
         formData.append("title", newsForm.title);
@@ -78,7 +84,14 @@ const HomePage = ({ isAuthenticated }) => {
             .finally(() => setLoading(false));
     };
 
+
     const submitPostForm = () => {
+        // Проверяем, что обязательные поля заполнены
+        if (!postForm.title || !postForm.description) {
+            alert("Пожалуйста, заполните все обязательные поля!");
+            return;
+        }
+
         setLoading(true);
         const formData = new FormData();
         formData.append("title", postForm.title);
@@ -108,6 +121,7 @@ const HomePage = ({ isAuthenticated }) => {
             .catch((error) => console.error("Ошибка при добавлении поста:", error))
             .finally(() => setLoading(false));
     };
+
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };

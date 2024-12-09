@@ -154,8 +154,9 @@ const Forum = () => {
     }, []);
 
     return (
-        <div className="forum-page">
-            <main>
+        <main>
+
+            <div className="forum-page">
                 <section className="forum">
                     <h2>Форум</h2>
                     <p>Добро пожаловать на форум! Задавайте вопросы, делитесь опытом, находите решения.</p>
@@ -197,69 +198,75 @@ const Forum = () => {
                     </div>
 
                 </section>
-            </main>
 
-            {/* Модальное окно для добавления вопроса */}
-            {showModal && (
-                <div className="modal-forum" ref={modalRef}>
-                    <div className="modal-content">
-                        <h3>Задать вопрос</h3>
-                        <form onSubmit={addQuestion}>
-                            <label>Тема вопроса</label>
-                            <input
-                                type="text"
-                                value={newQuestion.title}
-                                onChange={(e) => setNewQuestion({ ...newQuestion, title: e.target.value })}
-                                required
-                            />
-                            <label>Описание</label>
-                            <textarea
-                                value={newQuestion.description}
-                                onChange={(e) => setNewQuestion({ ...newQuestion, description: e.target.value })}
-                                required
-                            ></textarea>
-                            <button type="submit" className="btn">Отправить</button>
-                            <button type="button" className="btn cancel-btn" onClick={() => setShowModal(false)}>Отмена</button>
-                        </form>
-                    </div>
-                </div>
-            )}
+                {/* Модальное окно для добавления вопроса */}
+                {
+                    showModal && (
+                        <div className="modal-forum" ref={modalRef}>
+                            <div className="modal-content">
+                                <h3>Задать вопрос</h3>
+                                <form onSubmit={addQuestion}>
+                                    <label>Тема вопроса</label>
+                                    <input
+                                        type="text"
+                                        value={newQuestion.title}
+                                        onChange={(e) => setNewQuestion({ ...newQuestion, title: e.target.value })}
+                                        required
+                                    />
+                                    <label>Описание</label>
+                                    <textarea
+                                        value={newQuestion.description}
+                                        onChange={(e) => setNewQuestion({ ...newQuestion, description: e.target.value })}
+                                        required
+                                    ></textarea>
+                                    <button type="submit" className="btn">Отправить</button>
+                                    <button type="button" className="btn cancel-btn" onClick={() => setShowModal(false)}>Отмена</button>
+                                </form>
+                            </div>
+                        </div>
+                    )
+                }
 
-            {/* Модальное окно для просмотра ответов */}
-            {showAnswerModal && (
-                <div className="modal-forum" ref={answerModalRef}>
-                    <div className="modal-content">
-                        <h3>Ответы</h3>
-                        {answers.length === 0 ? (
-                            <p>Нет ответов</p>  // Если нет ответов, показываем это сообщение
-                        ) : (
-                            answers.map((answer) => (
-                                <p key={answer.id}><strong>{answer.user}:</strong> {answer.answer}</p>
-                            ))
-                        )}
-                        <button className="btn" onClick={() => setShowAnswerModal(false)}>Закрыть</button>
-                    </div>
-                </div>
-            )}
+                {/* Модальное окно для просмотра ответов */}
+                {
+                    showAnswerModal && (
+                        <div className="modal-forum" ref={answerModalRef}>
+                            <div className="modal-content">
+                                <h3>Ответы</h3>
+                                {answers.length === 0 ? (
+                                    <p>Нет ответов</p>  // Если нет ответов, показываем это сообщение
+                                ) : (
+                                    answers.map((answer) => (
+                                        <p key={answer.id}><strong>{answer.user}:</strong> {answer.answer}</p>
+                                    ))
+                                )}
+                                <button className="btn" onClick={() => setShowAnswerModal(false)}>Закрыть</button>
+                            </div>
+                        </div>
+                    )
+                }
 
-            {/* Модальное окно для добавления ответа */}
-            {showAddAnswerModal && (
-                <div className="modal-forum" ref={addAnswerModalRef}>
-                    <div className="modal-content">
-                        <h3>Добавить ответ</h3>
-                        <form onSubmit={addAnswer}>
-                            <textarea
-                                value={newAnswer}
-                                onChange={(e) => setNewAnswer(e.target.value)}
-                                required
-                            ></textarea>
-                            <button type="submit" className="btn">Отправить</button>
-                            <button type="button" className="btn cancel-btn" onClick={() => setShowAddAnswerModal(false)}>Отмена</button>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </div>
+                {/* Модальное окно для добавления ответа */}
+                {
+                    showAddAnswerModal && (
+                        <div className="modal-forum" ref={addAnswerModalRef}>
+                            <div className="modal-content">
+                                <h3>Добавить ответ</h3>
+                                <form onSubmit={addAnswer}>
+                                    <textarea
+                                        value={newAnswer}
+                                        onChange={(e) => setNewAnswer(e.target.value)}
+                                        required
+                                    ></textarea>
+                                    <button type="submit" className="btn">Отправить</button>
+                                    <button type="button" className="btn cancel-btn" onClick={() => setShowAddAnswerModal(false)}>Отмена</button>
+                                </form>
+                            </div>
+                        </div>
+                    )
+                }
+            </div >
+        </main>
     );
 };
 

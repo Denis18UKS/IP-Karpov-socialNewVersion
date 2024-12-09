@@ -13,8 +13,12 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); // Добавляем модуль для работы с файловой системой
 
+const webpush = require('web-push');
+const bodyParser = require('body-parser');
+
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
+
 
 wss.on('connection', (ws) => {
     console.log('WebSocket клиент подключен');
@@ -36,6 +40,10 @@ const notifyClients = (notification) => {
         }
     });
 };
+
+
+
+
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads/news', express.static(path.join(__dirname, 'uploads', 'news')));
@@ -104,7 +112,72 @@ const verifyAdmin = (req, res, next) => {
     next();
 };
 
+// Подключаем bodyParser для обработки JSON данных в теле запросов
+app.use(bodyParser.json());
 
+// Установите ваши VAPID ключи (публичный и приватный ключ)
+const VAPID_PUBLIC_KEY = 'BCOge_s-EHkgkT0Pys5Ch-vEZEvsC1JzQ4H1o3xnViXrzOuobKhzex7rVVXsbqxGIhrhrnJRfTWRGX2vcTlrCq4';
+const VAPID_PRIVATE_KEY = 'mP_aIpeAHdKG2b8Wys3aOIgN3BUCL5AB2gheyrH6zq8';  // Замените на ваш реальный приватный ключ
+
+
+// Устанавливаем VAPID детали
+webpush.setVapidDetails(
+    'mailto:honorxpremium75@gmail.com', // Замените на ваш email
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+);
+
+// Хранение подписок (вам нужно использовать базу данных для постоянного хранения)
+let subscriptions = [];  // Используйте базу данных вместо массива
+
+
+// Эндпоинт для получения подписки от клиента
+app.post('/subscribe', (req, res) => {
+    const subscription = req.body;
+
+    if (!subscription) {
+        return res.status(400).json({ message: 'Необходимы данные подписки' });
+    }
+
+    // Сохраняем подписку в базе данных (здесь просто в массиве для примера)
+    subscriptions.push(subscription);
+    console.log('Получена подписка:', subscription);
+
+    // Отправляем успешный ответ
+    res.status(201).json({ message: 'Подписка получена успешно' });
+});
+
+// Эндпоинт для отправки уведомлений
+app.post('/send-notification', (req, res) => {
+    const { username, text } = req.body;
+
+    if (!username || !text) {
+        return res.status(400).json({ message: 'Отсутствуют данные username или текст сообщения' });
+    }
+
+    if (subscriptions.length === 0) {
+        return res.status(400).json({ message: 'Нет подписчиков' });
+    }
+
+    // Отправляем уведомление всем подписанным пользователям
+    const notificationPayload = JSON.stringify({
+        title: 'Новое сообщение',
+        body: `${username} отправил вам сообщение: ${text}`,
+        icon: '/favicon.ico',
+    });
+
+    // Отправляем уведомление каждому подписчику
+    Promise.all(
+        subscriptions.map(subscription =>
+            webpush.sendNotification(subscription, notificationPayload)
+        )
+    )
+        .then(() => res.status(200).json({ message: 'Уведомления отправлены' }))
+        .catch((err) => {
+            console.error('Ошибка при отправке уведомлений:', err);
+            res.status(500).json({ message: 'Ошибка при отправке уведомлений' });
+        });
+});
 
 
 

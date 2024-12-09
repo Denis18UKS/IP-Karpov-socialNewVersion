@@ -118,6 +118,36 @@ const Chats = () => {
         };
     }, [chatId, currentUser]);
 
+    useEffect(() => {
+        const subscribeUser = async () => {
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                const registration = await navigator.serviceWorker.ready;
+
+                // Используйте правильный ключ (base64url)
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: 'BCOge_s-EHkgkT0Pys5Ch-vEZEvsC1JzQ4H1o3xnViXrzOuobKhzex7rVVXsbqxGIhrhrnJRfTWRGX2vcTlrCq4',
+                });
+
+                // Отправляем подписку на сервер
+                await fetch('http://localhost:5000/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(subscription),
+                });
+
+                console.log('Пользователь подписан на уведомления.');
+            } else {
+                console.warn('Push API не поддерживается этим браузером.');
+            }
+        };
+        
+
+        subscribeUser();
+    }, []);
+
     const selectChat = (user) => {
         if (selectedUser && selectedUser.id === user.id) {
             return;

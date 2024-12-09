@@ -12,7 +12,9 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { ru } from 'date-fns/locale';
-import { format } from 'date-fns'; // Импортируем функцию для форматирования дат
+import { format } from 'date-fns';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 // Регистрация компонентов Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, TimeScale);
@@ -40,32 +42,29 @@ const StatisticsPage = () => {
         return <p>Загрузка...</p>;
     }
 
-    // Формируем данные для диаграммы
     const data = {
         labels: statistics.map((item) => {
             const date = new Date(item.date);
-            // Форматируем дату как "1 декабря 2024"
             return format(date, 'd MMMM yyyy', { locale: ru });
-        }), // Полные даты для оси X
+        }),
         datasets: [
             {
                 label: 'Количество зарегистрированных пользователей',
-                data: statistics.map((item) => item.user_count), // Количество пользователей
+                data: statistics.map((item) => item.user_count),
                 backgroundColor: 'rgba(75, 192, 192, 0.5)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 2,
-                borderRadius: 5, // Скругленные края колонок
+                borderRadius: 5,
             },
         ],
     };
 
-    // Опции для диаграммы
     const options = {
         responsive: true,
-        maintainAspectRatio: false, // Позволяет задавать высоту и ширину вручную
+        maintainAspectRatio: false,
         scales: {
             x: {
-                type: 'category', // Категориальная ось для дат
+                type: 'category',
                 title: {
                     display: true,
                     text: 'Дата',
@@ -76,7 +75,7 @@ const StatisticsPage = () => {
                     padding: 10,
                 },
                 grid: {
-                    display: false, // Скрыть сетку на оси X
+                    display: false,
                 },
             },
             y: {
@@ -91,7 +90,7 @@ const StatisticsPage = () => {
                     padding: 10,
                 },
                 grid: {
-                    color: 'rgba(200, 200, 200, 0.2)', // Цвет сетки
+                    color: 'rgba(200, 200, 200, 0.2)',
                 },
             },
         },
@@ -116,11 +115,62 @@ const StatisticsPage = () => {
         },
     };
 
+    const downloadPDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text('Statistics Register Users', 14, 20);
+
+        const tableData = statistics.map((item) => [
+            format(new Date(item.date), 'd MMMM yyyy'),
+            item.user_count,
+        ]);
+        doc.autoTable({
+            head: [['Date', 'Count Register Users']],
+            body: tableData,
+            startY: 30,
+        });
+
+        doc.save('StatRegUsers.pdf');
+    };
+
     return (
         <main>
             <div style={{ width: '90%', maxWidth: '800px', margin: '0 auto', height: '500px' }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#ff6f91' }}>Статистика пользователей</h2>
+                <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#ff6f91' }}>
+                    Статистика пользователей
+                </h2>
                 <Bar data={data} options={options} />
+                <button
+                    onClick={downloadPDF}
+                    style={{
+                        display: 'block',
+                        margin: '20px auto',
+                        padding: '12px 24px',
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, background-color 0.3s',
+                    }}
+                    onMouseOver={(e) =>
+                        (e.target.style.backgroundColor = '#218838')
+                    }
+                    onMouseOut={(e) =>
+                        (e.target.style.backgroundColor = '#28a745')
+                    }
+                    onMouseDown={(e) =>
+                        (e.target.style.transform = 'scale(0.95)')
+                    }
+                    onMouseUp={(e) =>
+                        (e.target.style.transform = 'scale(1)')
+                    }
+                >
+                    Скачать статистику в PDF
+                </button>
             </div>
         </main>
     );

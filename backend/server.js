@@ -656,6 +656,10 @@ app.post('/messages', verifyToken, async (req, res) => {
     const { chatId, message } = req.body;
     const userId = req.user.id;
 
+    if (!chatId) {
+        return res.status(400).json({ message: 'chatId отсутствует' });
+    }
+
     try {
         const [result] = await db.query(
             'INSERT INTO messages (chat_id, user_id, message, created_at) VALUES (?, ?, ?, NOW())',
@@ -669,12 +673,11 @@ app.post('/messages', verifyToken, async (req, res) => {
             chat_id: chatId,
             user_id: userId,
             message,
-            username: user[0].username, // Имя пользователя из базы данных
+            username: user[0].username,
             created_at: new Date(),
-            read: false, // Предположим, что новое сообщение еще не прочитано
+            read: false,
         };
 
-        // Отправляем уведомление через WebSocket
         notifyClients({ type: 'NEW_MESSAGE', data: newMessage });
 
         res.status(201).json(newMessage);
@@ -683,6 +686,7 @@ app.post('/messages', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Ошибка при добавлении сообщения' });
     }
 });
+
 
 app.get('/messages/:chatId', verifyToken, async (req, res) => {
     const { chatId } = req.params;
@@ -700,32 +704,32 @@ app.get('/messages/:chatId', verifyToken, async (req, res) => {
 });
 
 app.post('/chats', verifyToken, async (req, res) => {
-    const { userId2 } = req.body; // ID другого пользователя
+    const { userId2 } = req.body;
     const { id: userId1 } = req.user;
 
     try {
-        // Проверяем, существует ли чат
         const [existingChat] = await db.query(
             'SELECT * FROM chats WHERE (user_id_1 = ? AND user_id_2 = ?) OR (user_id_1 = ? AND user_id_2 = ?)',
             [userId1, userId2, userId2, userId1]
         );
 
         if (existingChat.length > 0) {
-            return res.status(200).json(existingChat[0]); // Возвращаем существующий чат
+            return res.status(200).json(existingChat[0]);
         }
 
-        // Если нет, создаём новый
         const [result] = await db.query(
             'INSERT INTO chats (user_id_1, user_id_2) VALUES (?, ?)',
             [userId1, userId2]
         );
 
-        res.status(201).json({ id: result.insertId, user_id_1: userId1, user_id_2: userId2 });
+        res.status(201).json({ id: result.insertId });
     } catch (err) {
-        console.error(err);
+        console.error('Ошибка при создании чата:', err);
         res.status(500).json({ message: 'Ошибка при создании чата' });
     }
 });
+
+
 
 // Эндпоинт для получения репозиториев
 app.get('/repositories/:github_username', verifyToken, async (req, res) => {

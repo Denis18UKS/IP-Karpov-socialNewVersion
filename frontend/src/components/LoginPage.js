@@ -8,7 +8,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [showBlockedAlert, setShowBlockedAlert] = useState(false); // Состояние для отображения alert
     const [showSuccessAlert, setShowSuccessAlert] = useState(false); // Состояние для отображения success alert
-    const [timer, setTimer] = useState(5); // Таймер на 5 секунд
+    const [timer, setTimer] = useState(3); // Таймер на 5 секунд
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {

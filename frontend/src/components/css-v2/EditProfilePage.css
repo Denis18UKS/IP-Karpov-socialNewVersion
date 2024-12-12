@@ -5,16 +5,35 @@
     align-items: center;
 }
 
+.edit-profile-form {
+    display: flex;
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    justify-content: center;
+    flex-direction: column;
+}
+
 h1 {
     text-align: center;
     margin-bottom: 20px;
+}
+
+textarea {
+    resize: none;
 }
 
 .form-group {
     margin-bottom: 15px;
 }
 
-.input-field, .textarea-field, .file-input {
+.input-field,
+.textarea-field,
+.file-input {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -62,7 +81,8 @@ h1 {
         padding: 20px; /* Уменьшение отступов для мобильных */
     }
 
-    .input-field, .textarea-field {
+    .input-field,
+    .textarea-field {
         padding: 8px; /* Уменьшение отступов внутри полей ввода */
     }
 

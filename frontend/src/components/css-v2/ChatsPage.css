@@ -18,8 +18,11 @@ body {
 }
 
 .user-list ul {
+    overflow-y: scroll;
     padding: 0;
     list-style: none;
+    overflow-x: hidden;
+    max-height: 60vh;
 }
 
 .user-list li {

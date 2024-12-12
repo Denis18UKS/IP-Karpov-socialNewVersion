@@ -52,7 +52,7 @@ label {
 }
 
 textarea {
-    resize: vertical;
+    resize: none;
 }
 
 .submit-btn,

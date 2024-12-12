@@ -153,6 +153,11 @@ footer {
     border-radius: 6px;
     border: 1px solid #ccc;
     font-size: 16px;
+    resize: none;
+}
+
+.modal-content p {
+    text-align: justify;
 }
 
 .modal-content form input:focus,

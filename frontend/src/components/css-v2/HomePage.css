@@ -8,6 +8,31 @@ main {
     min-height: 100vh;
 }
 
+.add-button {
+    right: 0;
+    z-index: 199;
+    position: fixed;
+    bottom: 20px;
+    transform: translateX(-50%);
+    background-color: #ff6f91;
+    color: white;
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.add-button:hover {
+    background-color: #ff3e63;
+}
+
+
 .news-section h2,
 .posts-section h2,
 .moderation-section h2,
@@ -18,13 +43,12 @@ main {
     transition: transform 0.3s;
 }
 
-.hero h2:hover {
-    transform: scale(1.05);
-}
-
-.hero p {
-    font-size: 18px;
-    color: #555;
+.news-section,
+.posts-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
 }
 
 /* Стиль для секции новостей и постов */
@@ -98,23 +122,27 @@ button {
     transition: background-color 0.3s, transform 0.3s;
 }
 
-.add-button-news {
-    z-index: 199;
-    position: fixed;
-    left: 0;
-    top: 0;
-}
-
+/* Кнопки для добавления новостей и постов */
+.add-button-news,
 .add-button-post {
     z-index: 199;
     position: fixed;
+    bottom: 20px;
+    background-color: #ff6f91;
+    color: white;
+    font-size: 1rem;
+}
+
+.add-button-news {
     left: 10%;
-    top: 0;
+}
+
+.add-button-post {
+    left: 60%;
 }
 
 button:hover {
     background-color: #ff3e63;
-    transform: scale(1.05);
 }
 
 /* Модальные окна */
@@ -132,14 +160,26 @@ button:hover {
 }
 
 .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    text-align: center;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    animation: scaleUp 0.3s ease-in-out;
+    max-width: 600px;
+    width: 100%;
+    margin: 50px auto;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin-top: 120px;
+    /* Отступ сверху для предотвращения перекрытия хедером */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Центрируем кнопки */
+    justify-content: center;
+    /* Центрируем кнопки */
 }
+
 
 .modal-content h2 {
     margin-bottom: 20px;
@@ -158,9 +198,39 @@ button:hover {
     padding: 5px;
 }
 
+/* Стиль для кнопок в модальном окне */
 .modal-content button {
-    margin: 5px;
-    width: 48%;
+    margin: 10px 5px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(145deg, #ff6f91, #ff3e63);
+    /* Градиент для кнопки */
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 20px rgba(255, 105, 135, 0.5);
+    /* Легкая тень */
+    transition: all 0.3s ease-in-out;
+}
+
+/* Эффект при наведении на кнопку */
+.modal-content button:hover {
+    background: linear-gradient(145deg, #ff3e63, #ff6f91);
+    /* Изменение градиента при наведении */
+    transform: translateY(-3px);
+    /* Легкий сдвиг при наведении */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2), 0 2px 30px rgba(255, 105, 135, 0.7);
+    /* Более сильная тень */
+}
+
+/* Эффект при нажатии */
+.modal-content button:active {
+    transform: translateY(1px);
+    /* Легкий эффект нажатия */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 10px rgba(255, 105, 135, 0.5);
+    /* Меньшая тень */
 }
 
 /* Подвал */
@@ -192,19 +262,46 @@ footer {
     .add-button-news {
         z-index: 199;
         position: fixed;
-        left: 0;
-        top: 0;
+        bottom: 20px;
+        left: 10%;
     }
 
     .add-button-post {
         z-index: 199;
         position: fixed;
-        left: 0;
-        top: 10%;
+        bottom: 20px;
+        left: 60%;
     }
 }
 
 @media (max-width: 768px) {
+
+    /* Модальное окно */
+    .modal-content {
+        padding: 20px;
+        /* Уменьшаем отступы внутри окна */
+        max-width: 90%;
+        /* Уменьшаем максимальную ширину окна */
+        margin: 20px auto;
+        /* Уменьшаем отступы сверху и снизу на мобильных */
+        max-height: 80vh;
+        /* Ограничиваем максимальную высоту */
+        margin-top: 100px;
+        /* Уменьшаем отступ сверху на мобильных */
+    }
+
+    /* Заголовок */
+    .modal-content h2 {
+        font-size: 20px;
+    }
+
+    /* Кнопки в модальном окне */
+    .modal-content button {
+        padding: 10px 18px;
+        /* Уменьшаем размер кнопки на мобильных */
+        font-size: 14px;
+    }
+
     .hero {
         padding: 20px;
     }
@@ -225,16 +322,16 @@ footer {
         width: auto;
         z-index: 199;
         position: fixed;
-        left: 0;
-        top: 0;
+        bottom: 20px;
+        left: 10%;
     }
 
     .add-button-post {
         width: auto;
         z-index: 199;
         position: fixed;
-        left: 0;
-        top: 15%;
+        bottom: 20px;
+        left: 60%;
     }
 
     footer {

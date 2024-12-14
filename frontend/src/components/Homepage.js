@@ -6,6 +6,7 @@ const HomePage = ({ isAuthenticated }) => {
     const [posts, setPosts] = useState([]);
     const [showMoreNews, setShowMoreNews] = useState(false);
     const [showMorePosts, setShowMorePosts] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Модальное окно выбора
     const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -47,7 +48,6 @@ const HomePage = ({ isAuthenticated }) => {
     const toggleShowMorePosts = () => setShowMorePosts(!showMorePosts);
 
     const submitNewsForm = () => {
-        // Проверяем, что обязательные поля заполнены
         if (!newsForm.title || !newsForm.description || !newsForm.link) {
             alert("Пожалуйста, заполните все обязательные поля!");
             return;
@@ -84,9 +84,7 @@ const HomePage = ({ isAuthenticated }) => {
             .finally(() => setLoading(false));
     };
 
-
     const submitPostForm = () => {
-        // Проверяем, что обязательные поля заполнены
         if (!postForm.title || !postForm.description) {
             alert("Пожалуйста, заполните все обязательные поля!");
             return;
@@ -122,7 +120,6 @@ const HomePage = ({ isAuthenticated }) => {
             .finally(() => setLoading(false));
     };
 
-
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         const date = new Date(dateString);
@@ -133,7 +130,7 @@ const HomePage = ({ isAuthenticated }) => {
         if (items.length === 0) {
             return <p className="no-items">{type === 'news' ? 'Нет новостей' : 'Нет постов'}</p>;
         }
-        const visibleItems = showMore ? items : items.slice(0, 6);
+        const visibleItems = showMore ? items : items.slice(0, 3);
 
         return visibleItems.map((item) => (
             <div key={item.id} className="card">
@@ -157,22 +154,15 @@ const HomePage = ({ isAuthenticated }) => {
         ));
     };
 
-
-
     return (
         <div>
             <main>
                 <section className="news-section">
                     <h2>Новости</h2>
                     <div className="cards-container news-cards">{renderCards(news, showMoreNews, 'news')}</div>
-                    {news.length > 6 && (
+                    {news.length > 3 && (
                         <button onClick={toggleShowMoreNews}>
                             {showMoreNews ? "Скрыть" : "Показать больше"}
-                        </button>
-                    )}
-                    {isAuthenticated && (
-                        <button className="add-button-news" onClick={() => setIsNewsModalOpen(true)}>
-                            Добавить новость
                         </button>
                     )}
                 </section>
@@ -180,25 +170,38 @@ const HomePage = ({ isAuthenticated }) => {
                 <section className="posts-section">
                     <h2>Посты</h2>
                     <div className="cards-container posts-cards">{renderCards(posts, showMorePosts, 'posts')}</div>
-                    {posts.length > 6 && (
+                    {posts.length > 3 && (
                         <button onClick={toggleShowMorePosts}>
                             {showMorePosts ? "Скрыть" : "Показать больше"}
                         </button>
                     )}
-                    {isAuthenticated && (
-                        <button className="add-button-post" onClick={() => setIsPostModalOpen(true)}>
-                            Создать пост
-                        </button>
-                    )}
                 </section>
-
             </main>
 
             <footer>
                 <p>&copy; 2024 IT-BIRD. Все права защищены.</p>
             </footer>
 
-            {/* Модальные окна */}
+            {/* Кнопка "+" для создания новостей или постов */}
+            {isAuthenticated && (
+                <button className="add-button" onClick={() => setIsCreateModalOpen(true)}>
+                    +
+                </button>
+            )}
+
+            {/* Модальное окно выбора новости или поста */}
+            {isCreateModalOpen && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <h2>Что хотите создать?</h2>
+                        <button onClick={() => { setIsCreateModalOpen(false); setIsNewsModalOpen(true); }}>Создать новость</button>
+                        <button onClick={() => { setIsCreateModalOpen(false); setIsPostModalOpen(true); }}>Создать пост</button>
+                        <button onClick={() => setIsCreateModalOpen(false)}>Отмена</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Модальное окно для создания новости */}
             {isNewsModalOpen && (
                 <div className="modal">
                     <div className="modal-content">
@@ -237,6 +240,7 @@ const HomePage = ({ isAuthenticated }) => {
                 </div>
             )}
 
+            {/* Модальное окно для создания поста */}
             {isPostModalOpen && (
                 <div className="modal">
                     <div className="modal-content">

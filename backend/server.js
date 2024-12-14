@@ -360,10 +360,13 @@ app.post('/register', async (req, res) => {
 
     try {
         // Проверка на существующего пользователя с таким email
-        const [existingUser] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
-        if (existingUser.length > 0) {
+        const [existingUserEmail] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+        const [existingUserGitHub] = await db.query('SELECT id FROM users WHERE github_username = ?', [github_username]);
+        if (existingUserEmail.length > 0) {
             return res.status(400).json({ message: 'Пользователь с таким email уже существует!' });
-        }
+        } else if (existingUserGitHub.length > 0) {
+            return res.status(400).json({ message: 'Пользователь с таким GitHub Username уже существует!' });
+        } 
 
         // Хеширование пароля
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -1003,7 +1006,6 @@ app.get("/forums/:id/answers", async (req, res) => {
 });
 
 // Добавление нового ответа
-// Добавление нового ответа
 app.post("/forums/:id/answers", verifyToken, async (req, res) => {
     const { id } = req.params; // ID вопроса
     const { answer } = req.body;
@@ -1045,15 +1047,34 @@ app.post("/forums/:id/answers", verifyToken, async (req, res) => {
 });
 
 // Обновление статуса вопроса
+// Обновление статуса вопроса
 app.put("/forums/:id/status", verifyToken, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
+    const userId = req.user.id;
 
-    if (!status) {
-        return res.status(400).json({ message: "Статус обязателен." });
+    // Проверка, что статус допустимый
+    if (status !== 'открыт' && status !== 'решён') {
+        return res.status(400).json({ message: "Недопустимый статус." });
     }
 
     try {
+        // Проверка, является ли пользователь автором вопроса или администратором
+        const [questionOwner] = await db.query(
+            'SELECT user_id FROM forums WHERE id = ?',
+            [id]
+        );
+
+        if (!questionOwner.length) {
+            return res.status(404).json({ message: "Вопрос не найден." });
+        }
+
+        // Проверка прав доступа (если это не администратор или автор вопроса)
+        if (questionOwner[0].user_id !== userId && req.user.role !== 'admin') {
+            return res.status(403).json({ message: "У вас нет прав для изменения статуса вопроса." });
+        }
+
+        // Обновляем статус
         const [result] = await db.query(
             "UPDATE forums SET status = ? WHERE id = ?",
             [status, id]
@@ -1063,12 +1084,19 @@ app.put("/forums/:id/status", verifyToken, async (req, res) => {
             return res.status(404).json({ message: "Вопрос не найден." });
         }
 
-        res.status(200).json({ message: "Статус обновлен." });
+        // Получаем обновленные данные вопроса
+        const [updatedQuestion] = await db.query(
+            'SELECT id, question, description, status, user_id FROM forums WHERE id = ?',
+            [id]
+        );
+
+        res.status(200).json(updatedQuestion[0]);
     } catch (error) {
         console.error("Ошибка при обновлении статуса:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
 
 
 // Старт сервера

@@ -113,19 +113,31 @@ const Forum = () => {
         const token = localStorage.getItem('token'); // Получаем токен из localStorage
 
         try {
-            await fetch(`http://localhost:5000/forums/${questionId}/status`, {
+            const response = await fetch(`http://localhost:5000/forums/${questionId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Добавляем токен в заголовок
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ status: 'Решён' }),
+                body: JSON.stringify({ status: 'решён' }),
             });
-            fetchQuestions(); // Обновляем список вопросов после изменения статуса
+
+            if (response.ok) {
+                const updatedQuestion = await response.json();
+                setQuestions((prev) =>
+                    prev.map((q) =>
+                        q.id === updatedQuestion.id ? { ...q, status: updatedQuestion.status } : q
+                    )
+                );
+            } else {
+                const data = await response.json();
+                console.error('Ошибка при закрытии вопроса:', data.message);
+            }
         } catch (error) {
             console.error('Ошибка при закрытии вопроса:', error);
         }
     };
+
 
     // useRef для модальных окон
     const modalRef = useRef();
@@ -165,7 +177,7 @@ const Forum = () => {
 
                     <div className="questions">
                         {questions.map((q) => (
-                            <article key={q.id} className={`question ${q.status === 'Решён' ? 'resolved' : ''}`}>
+                            <article key={q.id} className={`question ${q.status === 'решён' ? 'resolved' : ''}`}>
                                 <h3>Тема: {q.title}</h3>
                                 <p>Описание: {q.description}</p>
                                 <p><strong>Пользователь:</strong> {q.user || 'Не указан'}</p>
@@ -178,7 +190,7 @@ const Forum = () => {
                                 </button>
 
                                 {/* Если статус НЕ "Решён", показываем кнопки "Ответить" и "Закрыть вопрос" */}
-                                {q.status !== 'Решён' && (
+                                {q.status !== 'решён' && (
                                     <>
                                         {String(q.user_id) !== String(userId) && (
                                             <button className="btn" onClick={() => { setSelectedQuestion(q.id); setShowAddAnswerModal(true); }}>

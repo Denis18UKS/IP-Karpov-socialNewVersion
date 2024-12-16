@@ -544,7 +544,7 @@ app.put('/profile/update', verifyToken, upload.single('avatar'), async (req, res
     // Валидация email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Неверный формат email.' });
+        return res.status(400).json({ message: 'Неверный формат email.' });
     }
 
     try {

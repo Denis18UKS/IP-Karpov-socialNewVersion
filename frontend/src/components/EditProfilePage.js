@@ -76,7 +76,7 @@ const EditProfilePage = () => {
             });
 
             if (!response.ok) {
-                throw new Error("Ошибка при обновлении профиля");
+                throw new Error("Данный GitHub или Email уже занят!");
             }
 
             const data = await response.json();

@@ -352,25 +352,10 @@ app.get('/hackathons', async (req, res) => {
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
-    let { username, email, password, github_username } = req.body;
-
-
-    // Удаление лишних пробелов
-    username = username ? username.trim() : "";
-    email = email ? email.trim() : "";
-    github_username = github_username ? github_username.trim() : null;
+    const { username, email, password, github_username } = req.body;
 
     if (!username || !email || !password) {
         return res.status(400).json({ message: 'Поля username, email и password обязательны!' });
-    }
-
-    // Проверка пароля на соответствие регулярному выражению
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}$/;
-
-    if (!passwordRegex.test(password)) {
-        return res.status(400).json({
-            alert: 'Пароль должен содержать как минимум 8 символов, одну заглавную и одну строчную букву, цифру и специальный символ!'
-        });
     }
 
     try {
@@ -381,7 +366,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Пользователь с таким email уже существует!' });
         } else if (existingUserGitHub.length > 0) {
             return res.status(400).json({ message: 'Пользователь с таким GitHub Username уже существует!' });
-        }
+        } 
 
         // Хеширование пароля
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -532,20 +517,8 @@ app.get('/profile', verifyToken, async (req, res) => {
 // Обновление профиля пользователя
 app.put('/profile/update', verifyToken, upload.single('avatar'), async (req, res) => {
     const { id } = req.user;
-    let { username, github_username, skills, email } = req.body;
+    const { username, github_username, skills, email } = req.body;
     const avatar = req.file ? `/uploads/${req.file.filename}` : null;
-
-    // Удаление лишних пробелов
-    username = username ? username.trim() : null;
-    github_username = github_username ? github_username.trim() : null;
-    skills = skills ? skills.trim() : null;
-    email = email ? email.trim() : null;
-
-    // Валидация email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email && !emailRegex.test(email)) {
-        return res.status(400).json({ message: 'Неверный формат email.' });
-    }
 
     try {
         if (github_username !== undefined) {
@@ -562,7 +535,7 @@ app.put('/profile/update', verifyToken, upload.single('avatar'), async (req, res
         const values = [];
 
         if (username) updateFields.push('username = ?'), values.push(username);
-        if (github_username !== undefined) updateFields.push('github_username = ?'), values.push(github_username === '' ? null : github_username);
+        if (github_username !== undefined) updateFields.push('github_username = ?'), values.push(github_username.trim() === '' ? null : github_username);
         if (skills) updateFields.push('skills = ?'), values.push(skills);
         if (email) updateFields.push('email = ?'), values.push(email);
         if (avatar) updateFields.push('avatar = ?'), values.push(avatar);

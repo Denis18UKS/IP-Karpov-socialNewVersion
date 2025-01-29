@@ -43,7 +43,7 @@ input:focus {
 
 /* Стиль для кнопок */
 button {
-    background-color: #28a745;
+ background-color: #ff6f91;
     color: white;
     border: none;
     padding: 12px;
@@ -56,7 +56,7 @@ button {
 
 /* Эффект при наведении на кнопку */
 button:hover {
-    background-color: #218838;
+    background: linear-gradient(145deg, #ff3e63, #ff6f91);
 }
 
 /* Сообщение об ошибке */

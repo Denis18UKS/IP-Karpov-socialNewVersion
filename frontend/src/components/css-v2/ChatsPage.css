@@ -53,7 +53,7 @@ body {
 }
 
 .user-list li.active-chat:hover {
-    background-color: teal;
+        background: linear-gradient(145deg, #ff6f91, #ff3e63);
     /* Немного темнее зеленый при наведении */
 }
 
@@ -132,7 +132,7 @@ body {
 .chat-send {
     padding: 10px 20px;
     border: none;
-    background-color: teal;
+        background: linear-gradient(145deg, #ff6f91, #ff3e63);
     color: white;
     border-radius: 5px;
     cursor: pointer;

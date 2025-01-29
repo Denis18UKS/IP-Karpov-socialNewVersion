@@ -15,6 +15,7 @@
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -102,7 +103,7 @@ td {
 }
 
 button {
-    background-color: #28a745;
+    background-color: #ff6f91;
     /* Зеленая кнопка */
     color: white;
     border: none;
@@ -113,7 +114,7 @@ button {
 }
 
 button:hover {
-    background-color: #218838;
+    background: linear-gradient(145deg, #ff6f91, #ff3e63);
     /* Темнее зеленый на наведение */
 }
 

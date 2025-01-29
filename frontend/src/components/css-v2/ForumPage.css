@@ -31,7 +31,7 @@
 }
 
 .btn {
-    background-color: teal;
+        background: linear-gradient(145deg, #ff6f91, #ff3e63);
     /* Синий цвет */
     color: white;
     padding: 10px;
@@ -170,7 +170,7 @@ footer {
 /* Кнопки в модальном окне */
 .modal-content button {
     width: -webkit-fill-available;
-    background-color: teal;
+        background: linear-gradient(145deg, #ff6f91, #ff3e63);
     color: white;
     padding: 10px 15px;
     border-radius: 6px;

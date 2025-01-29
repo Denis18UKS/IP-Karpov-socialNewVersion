@@ -2,6 +2,10 @@
     text-decoration: none;
 }
 
+html{
+    background: linear-gradient(90deg, #e3fdfd, #ffe6fa);
+}
+
 hr {
     border: 1px solid lightgray;
 }
@@ -28,6 +32,7 @@ hr {
     padding: 20px;
     /* Отступы вокруг страницы */
     background-color: #f8f9fa;
+    background: linear-gradient(90deg, #e3fdfd, #ffe6fa);
     /* Легкий фон для всей страницы */
 }
 

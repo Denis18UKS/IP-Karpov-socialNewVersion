@@ -183,12 +183,12 @@ const UserProfilePage = () => {
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <Link to={`/user/${user.github_username}/commits/${repo.name}`} className="small-button">
+                                                    <Link to={`/user/${user.github_username}/commits/${repo.name}`} className="btn">
                                                         Показать коммиты
                                                     </Link>
                                                 </td>
                                                 <td>
-                                                    <Link to={`/user/${user.github_username}/files/${repo.name}`} className="small-button">
+                                                    <Link to={`/user/${user.github_username}/files/${repo.name}`} className="btn">
                                                         Посмотреть файлы
                                                     </Link>
                                                 </td>

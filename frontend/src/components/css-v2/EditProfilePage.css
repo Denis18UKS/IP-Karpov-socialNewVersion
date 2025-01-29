@@ -50,19 +50,15 @@ textarea {
     transition: background 0.3s;
 }
 
-.submit-btn:hover {
-    background-color: #218838; /* Темнее зеленый на наведение */
-}
-
 .cancel-btn {
     border: none;
-    background-color: transparent; /* Прозрачная кнопка */
-    color: #007bff; /* Синий текст для отмены */
+    background-color: #ff7eb3; /* Прозрачная кнопка */
+    color: white; /* Синий текст для отмены */
     cursor: pointer;
 }
 
 .cancel-btn:hover {
-    text-decoration: underline; /* Подчеркивание на наведение */
+    font-size: large; /* Подчеркивание на наведение */
 }
 
 .error-message {

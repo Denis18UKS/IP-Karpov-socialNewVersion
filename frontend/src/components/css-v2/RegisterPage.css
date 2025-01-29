@@ -56,9 +56,7 @@ button {
 }
 
 /* Эффект при наведении на кнопку */
-button:hover {
-    background: linear-gradient(145deg, #ff6f91, #ff3e63);
-}
+
 
 /* Модальное окно */
 .modal {

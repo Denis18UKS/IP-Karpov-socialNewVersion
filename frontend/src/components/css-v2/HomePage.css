@@ -28,9 +28,7 @@ main {
     transition: background-color 0.3s, transform 0.3s;
 }
 
-.add-button:hover {
-    background-color: #ff3e63;
-}
+
 
 
 .news-section h2,
@@ -141,9 +139,7 @@ button {
     left: 60%;
 }
 
-button:hover {
-    background-color: #ff3e63;
-}
+
 
 /* Модальные окна */
 .modal {

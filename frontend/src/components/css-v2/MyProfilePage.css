@@ -113,10 +113,7 @@ button {
     transition: background 0.3s;
 }
 
-button:hover {
-    background: linear-gradient(145deg, #ff6f91, #ff3e63);
-    /* Темнее зеленый на наведение */
-}
+
 
 footer {
     margin-top: 20px;

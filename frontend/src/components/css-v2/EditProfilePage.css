@@ -41,7 +41,7 @@ textarea {
 }
 
 .submit-btn {
-    background-color: #28a745; /* Зеленая кнопка */
+ background-color: #ff6f91; /* Зеленая кнопка */
     color: white;
     padding: 10px;
     border-radius: 4px;
@@ -50,19 +50,15 @@ textarea {
     transition: background 0.3s;
 }
 
-.submit-btn:hover {
-    background-color: #218838; /* Темнее зеленый на наведение */
-}
-
 .cancel-btn {
     border: none;
-    background-color: transparent; /* Прозрачная кнопка */
-    color: #007bff; /* Синий текст для отмены */
+    background-color: #ff7eb3; /* Прозрачная кнопка */
+    color: white; /* Синий текст для отмены */
     cursor: pointer;
 }
 
 .cancel-btn:hover {
-    text-decoration: underline; /* Подчеркивание на наведение */
+    font-size: large; /* Подчеркивание на наведение */
 }
 
 .error-message {

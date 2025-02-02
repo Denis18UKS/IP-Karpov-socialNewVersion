@@ -16,7 +16,8 @@ import UsersAdminPage from './admin/UsersAdminPage';
 import StatisticsPage from './admin/StatisticsPage';
 import ModerationPage from './admin/ModerationPage';
 
-
+import CommitsPage from './components/CommitsPage';
+import FilesPage from './components/FilesPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -41,7 +42,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<HomePage isAuthenticated={isAuthenticated} />} 
+          element={<HomePage isAuthenticated={isAuthenticated} />}
         />
         <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -56,6 +57,9 @@ function App() {
             <Route path="/forum" element={<ForumPage />} />
             <Route path="/xakatons" element={<XakatonsPage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/user/:username/commits/:repoName" element={<CommitsPage />} />
+            <Route path="/user/:username/files/:repoName" element={<FilesPage />} />
+
 
             {/* Администраторские маршруты */}
             {role === 'admin' && (

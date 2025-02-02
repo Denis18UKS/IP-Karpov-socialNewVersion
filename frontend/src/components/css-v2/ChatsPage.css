@@ -5,13 +5,14 @@ body {
 .chat-page {
     display: flex;
     padding: 20px;
-    background-color: #f0f4f8;
+    background-color: #e3fdfd;
+    /* Используем цвет из главной страницы */
 }
 
 .user-list {
     width: 250px;
     background-color: #ffffff;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #ddd;
     padding: 20px;
     border-radius: 10px 0 0 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -21,7 +22,6 @@ body {
     overflow-y: scroll;
     padding: 0;
     list-style: none;
-    overflow-x: hidden;
     max-height: 60vh;
 }
 
@@ -36,42 +36,35 @@ body {
 }
 
 .user-list li:hover {
-    background-color: #e0e0e0;
+    background-color: #f0f4f8;
+    /* Легкий серый фон при наведении */
 }
 
 .user-list li.active-chat {
-    background-color: #008080a1;
-    /* Зеленый фон для активного чата */
+    background-color: #ff6f91;
+    /* Цвет активного чата */
     color: white;
-    /* Белый цвет текста */
     font-weight: bold;
-    /* Жирный шрифт */
-    transition:
-        background-color 0.3s ease,
-        color 0.3s ease;
-    /* Плавные переходы */
-}
-
-.user-list li.active-chat:hover {
-    background-color: teal;
-    /* Немного темнее зеленый при наведении */
+    transition: background-color 0.3s ease;
 }
 
 .user-list img {
     width: 40px;
     height: 40px;
-    border-radius: 20%;
+    border-radius: 50%;
+    /* Используем 50% для круглых изображений */
     margin-right: 10px;
 }
 
 .chat-header {
-    background-color: #008080a1;
+    width: -webkit-fill-available;
+    background-color: #ff6f91;
+    /* Цвет заголовка чата */
     color: white;
     padding: 15px;
     font-weight: bold;
     text-align: center;
     border-radius: 10px;
-    width: -webkit-fill-available;
 }
 
 .chat-messages {
@@ -82,7 +75,8 @@ body {
     overflow-y: auto;
     max-height: 70vh;
     border-radius: 8px;
-    height: -webkit-fill-available;
+    padding: 10px;
+    background-color: #f9f9f9;
 }
 
 .message {
@@ -90,36 +84,40 @@ body {
     word-wrap: break-word;
     padding: 10px;
     border-radius: 5px;
-    background-color: lightblue;
+    background-color: #cce5ff;
+    /* Цвет для входящих сообщений */
     align-self: flex-start;
 }
 
 .message.mine {
     align-self: flex-end;
-    background-color: #cce5ff;
+    background-color: #ffebcd;
+    /* Цвет для исходящих сообщений */
 }
 
 .chat-box {
+    width: -webkit-fill-available;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     height: auto;
-    width: -webkit-fill-available;
-    background: aliceblue;
+    background: #ffffff;
+    /* Белый фон для чата */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .chat-input-container {
+    position: sticky;
+    bottom: 0;
     width: -webkit-fill-available;
     display: flex;
     gap: 10px;
     margin-top: 10px;
     padding: 10px;
+    background-color: #e3fdfd;
     border-top: 1px solid #ddd;
-    background-color: mediumturquoise;
-    position: sticky;
-    bottom: 0;
-    align-items: center;
-    border-radius: 1em;
+    border-radius: 0 0 10px 10px;
 }
 
 .chat-input {
@@ -132,7 +130,8 @@ body {
 .chat-send {
     padding: 10px 20px;
     border: none;
-    background-color: teal;
+    background-color: #ff6f91;
+    /* Цвет кнопки отправки */
     color: white;
     border-radius: 5px;
     cursor: pointer;
@@ -140,41 +139,33 @@ body {
 }
 
 .chat-send:hover {
-    background-color: #0056b3;
+    background-color: #ff3e63;
+    /* Более темный цвет при наведении */
 }
 
-/* Футер с центровкой текста */
 footer {
     text-align: center;
     padding: 20px;
     font-size: 14px;
     color: #888;
-    /* Цвет текста */
     background-color: #f1f1f1;
-    /* Легкий фон для футера */
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    /* Тень над футером */
     position: relative;
     z-index: 100;
 }
 
-/* Основной контейнер */
 .users {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-/* Обертка для основного содержимого */
 .main-content {
     flex: 1;
-    /* Занимает оставшееся пространство */
     padding-bottom: 20px;
-    /* Отступ для предотвращения перекрытия с футером */
 }
 
 .notification-badge {
-    z-index: 300;
     background-color: red;
     color: white;
     border-radius: 20%;
@@ -183,14 +174,12 @@ footer {
     top: -5px;
     right: -10px;
     font-weight: bold;
-    animation: shake 0.5s ease-in-out infinite alternate;
 }
 
 .scroll-to-bottom-icon {
-    background-color: #ff77b7;
+    background-color: #ff6f91;
     /* Нежный розовый цвет */
     color: white;
-    /* Белый цвет для стрелки */
     border-radius: 50%;
     /* Круглая форма */
     width: 40px;
@@ -203,14 +192,12 @@ footer {
     /* Размер стрелки */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     /* Легкая тень для глубины */
-    transition:
-        background-color 0.3s,
-        transform 0.3s;
+    transition: background-color 0.3s, transform 0.3s;
     /* Плавные переходы */
 }
 
 .scroll-to-bottom-icon:hover {
-    background-color: #ff5ca5;
+    background-color: #ff3e63;
     /* Более темный розовый при наведении */
     transform: scale(1.1);
     /* Увеличение кнопки при наведении */
@@ -229,6 +216,7 @@ footer {
     justify-content: center;
     height: 100%;
     background-color: #f9f9f9;
+    /* Легкий фон для пустого чата */
     color: #aaa;
     font-size: 18px;
     font-style: italic;

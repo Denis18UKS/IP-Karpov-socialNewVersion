@@ -7,14 +7,8 @@ import './css-v2/ChatsPage.css';
 
 const Chats = () => {
     const { chatId } = useParams();
-    const [selectedUser, setSelectedUser] = useState(() => {
-        const savedUser = localStorage.getItem('selectedUser');
-        return savedUser ? JSON.parse(savedUser) : null;
-    });
-    const [messages, setMessages] = useState(() => {
-        const savedMessages = localStorage.getItem('messages');
-        return savedMessages ? JSON.parse(savedMessages) : [];
-    });
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -29,7 +23,6 @@ const Chats = () => {
         const fetchUsers = async () => {
             const token = localStorage.getItem("token");
             if (!token) {
-                console.error("Токен не найден, требуется авторизация!");
                 navigate('/login');
                 return;
             }
@@ -40,48 +33,40 @@ const Chats = () => {
 
                 const response = await fetch('http://localhost:5000/users', {
                     method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
+                    headers: { 'Authorization': `Bearer ${token}` },
                 });
                 const usersData = await response.json();
-                const filteredUsers = usersData.filter(user => user.id !== decodedToken.id);
-                setUsers(filteredUsers);
-                setFilteredUsers(filteredUsers);
+                setUsers(usersData.filter(user => user.id !== decodedToken.id));
+                setFilteredUsers(usersData.filter(user => user.id !== decodedToken.id));
             } catch (error) {
-                console.error("Ошибка при загрузке пользователей:", error);
+                console.error("Ошибка загрузки пользователей:", error);
                 navigate('/login');
             }
         };
 
-        const fetchMessages = async (id) => {
+        fetchUsers();
+    }, [navigate]);
+
+    useEffect(() => {
+        if (!chatId) return;
+
+        const fetchMessages = async () => {
             const token = localStorage.getItem("token");
             try {
-                const response = await fetch(`http://localhost:5000/messages/${id}`, {
+                const response = await fetch(`http://localhost:5000/messages/${chatId}`, {
                     method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
+                    headers: { 'Authorization': `Bearer ${token}` },
                 });
                 const messagesData = await response.json();
                 setMessages(messagesData);
-
-                if (id !== chatId) {
-                    setUnreadMessagesCount((prevState) => ({
-                        ...prevState,
-                        [id]: messagesData.filter(msg => !msg.read).length,
-                    }));
-                }
+                setUnreadMessagesCount(prev => ({ ...prev, [chatId]: 0 }));
             } catch (error) {
-                console.error("Ошибка при загрузке сообщений:", error);
+                console.error("Ошибка загрузки сообщений:", error);
             }
         };
 
-        fetchUsers();
-        if (chatId) {
-            fetchMessages(chatId);
-        }
-    }, [chatId, navigate]);
+        fetchMessages();
+    }, [chatId]);
 
     useEffect(() => {
         const socket = new WebSocket('ws://localhost:8080');
@@ -91,49 +76,31 @@ const Chats = () => {
 
             if (notification.type === 'NEW_MESSAGE') {
                 const message = notification.data;
-
-                // Если сообщение уже есть или отправлено текущим пользователем, игнорируем
-                if (message.user_id === currentUser?.id) return;
-
-                // Если сообщение из другого чата
                 if (message.chat_id !== chatId) {
                     toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
-                    setUnreadMessagesCount((prevState) => ({
-                        ...prevState,
-                        [message.chat_id]: (prevState[message.chat_id] || 0) + 1,
+                    setUnreadMessagesCount(prev => ({
+                        ...prev,
+                        [message.chat_id]: (prev[message.chat_id] || 0) + 1
                     }));
                 } else {
-                    setMessages((prevMessages) => {
-                        const newMessages = [...prevMessages, message];
-                        localStorage.setItem('messages', JSON.stringify(newMessages));
-                        return newMessages;
-                    });
-                    setShowScrollButton(true);  // Показываем кнопку прокрутки
+                    setMessages(prev => [...prev, message]);
+                    setShowScrollButton(true);
                 }
             }
         };
 
-        return () => {
-            socket.close();
-        };
-    }, [chatId, currentUser]);
+        return () => socket.close();
+    }, [chatId]);
 
     const selectChat = (user) => {
-        if (selectedUser && selectedUser.id === user.id) {
-            return;
-        }
+        if (selectedUser?.id === user.id) return;
 
         setSelectedUser(user);
         setMessages([]);
-        setUnreadMessagesCount((prevState) => ({ ...prevState, [user.id]: 0 }));
-
-        // Сохраняем выбранного пользователя в localStorage
-        localStorage.setItem('selectedUser', JSON.stringify(user));
+        setUnreadMessagesCount(prev => ({ ...prev, [user.id]: 0 }));
 
         const token = localStorage.getItem("token");
         if (!token) return;
-
-        const userId2 = user.id;
 
         fetch('http://localhost:5000/chats', {
             method: 'POST',
@@ -141,7 +108,7 @@ const Chats = () => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ userId2 }),
+            body: JSON.stringify({ userId2: user.id }),
         })
             .then(response => response.json())
             .then(chatData => {
@@ -153,42 +120,38 @@ const Chats = () => {
     };
 
     const sendMessage = async () => {
-        if (newMessage.trim()) {
-            const token = localStorage.getItem("token");
-            try {
-                const response = await fetch(`http://localhost:5000/messages`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ chatId, message: newMessage, username: currentUser.username }),
-                });
+        if (newMessage.trim() === '') return;
 
-                if (response.ok) {
-                    const sentMessage = {
-                        id: Date.now(),
-                        chat_id: chatId,
-                        user_id: currentUser.id,
-                        message: newMessage,
-                        created_at: new Date().toISOString(),
-                        username: currentUser.username,
-                        read: true
-                    };
+        const token = localStorage.getItem("token");
+        try {
+            const response = await fetch(`http://localhost:5000/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ chatId, message: newMessage, username: currentUser.username }),
+            });
 
-                    setMessages((prevMessages) => {
-                        const updatedMessages = [...prevMessages, sentMessage];
-                        localStorage.setItem('messages', JSON.stringify(updatedMessages));  // Сохраняем сообщения
-                        return updatedMessages;
-                    });
-                    setNewMessage('');
-                    scrollToBottom();
-                } else {
-                    throw new Error('Ошибка при отправке сообщения');
-                }
-            } catch (error) {
-                console.error('Ошибка при отправке сообщения:', error);
+            if (response.ok) {
+                const sentMessage = {
+                    id: Date.now(),
+                    chat_id: chatId,
+                    user_id: currentUser.id,
+                    message: newMessage,
+                    created_at: new Date().toISOString(),
+                    username: currentUser.username,
+                    read: true
+                };
+
+                setMessages(prev => [...prev, sentMessage]);
+                setNewMessage('');
+                scrollToBottom();
+            } else {
+                throw new Error('Ошибка при отправке сообщения');
             }
+        } catch (error) {
+            console.error('Ошибка:', error);
         }
     };
 
@@ -202,10 +165,7 @@ const Chats = () => {
     const handleSearchChange = (e) => {
         const query = e.target.value.toLowerCase();
         setSearchQuery(query);
-        const filtered = users.filter(user =>
-            user.username.toLowerCase().includes(query)
-        );
-        setFilteredUsers(filtered);
+        setFilteredUsers(users.filter(user => user.username.toLowerCase().includes(query)));
     };
 
     const scrollToBottom = () => {
@@ -216,14 +176,7 @@ const Chats = () => {
         return avatar ? `http://localhost:5000${avatar}` : '/images/default-avatar.png';
     };
 
-    const handleScrollButtonClick = () => {
-        scrollToBottom();
-        setShowScrollButton(false);  // Скрыть кнопку после прокрутки
-    };
-
-    if (!currentUser) {
-        return <div>Загрузка...</div>;
-    }
+    if (!currentUser) return <div>Загрузка...</div>;
 
     return (
         <div className="chat-page">
@@ -233,25 +186,17 @@ const Chats = () => {
                 <h3>Пользователи</h3>
                 <input
                     type="text"
-                    placeholder="Поиск по имени..."
+                    placeholder="Поиск..."
                     value={searchQuery}
                     onChange={handleSearchChange}
                     className="search-input"
                 />
                 <ul>
-                    {filteredUsers.map((user) => (
-                        <li
-                            key={user.id}
-                            onClick={() => selectChat(user)}
-                            className={selectedUser && selectedUser.id === user.id ? 'active-chat' : ''}
-                        >
-                            <img src={getAvatarUrl(user.avatar)} alt={`${user.username} avatar`} />
+                    {filteredUsers.map(user => (
+                        <li key={user.id} onClick={() => selectChat(user)} className={selectedUser?.id === user.id ? 'active-chat' : ''}>
+                            <img src={getAvatarUrl(user.avatar)} alt="avatar" />
                             <p>{user.username}</p>
-                            {unreadMessagesCount[user.id] > 0 && (
-                                <span className="notification-badge">
-                                    {unreadMessagesCount[user.id]}
-                                </span>
-                            )}
+                            {unreadMessagesCount[user.id] > 0 && <span className="notification-badge">{unreadMessagesCount[user.id]}</span>}
                         </li>
                     ))}
                 </ul>
@@ -263,34 +208,18 @@ const Chats = () => {
                 </div>
 
                 <div className="chat-messages">
-                    {messages.map((message) => (
+                    {messages.map(message => (
                         <div key={message.id} className={message.user_id === currentUser.id ? 'message mine' : 'message'}>
-                            {message.message || 'Сообщение не найдено'}
+                            {message.message}
                         </div>
                     ))}
                     <div ref={messagesEndRef} />
                 </div>
 
-                {showScrollButton && (
-                    <button
-                        className="scroll-down-button"
-                        onClick={handleScrollButtonClick}
-                    >
-                        ↓
-                    </button>
-                )}
-
                 {selectedUser && (
                     <div className="chat-input-container">
-                        <input
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Введите сообщение..."
-                            className="chat-input"
-                        />
-                        <button className="chat-send btn" onClick={sendMessage}>Отправить</button>
+                        <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Введите сообщение..." />
+                        <button onClick={sendMessage}>Отправить</button>
                     </div>
                 )}
             </main>

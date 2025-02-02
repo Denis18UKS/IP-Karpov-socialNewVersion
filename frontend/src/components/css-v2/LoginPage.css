@@ -56,7 +56,8 @@ button {
 
 /* Эффект при наведении на кнопку */
 button:hover {
-    background-color: #218838;
+    background: #ff3e63;
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2), 0 2px 30px rgba(255, 105, 135, 0.7);
 }
 
 /* Сообщение об ошибке */

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import './css-v2/MyProfilePage.css'; // Импортируем CSS файл
-
+import { Link } from "react-router-dom"
 const UserProfilePage = () => {
     const { username } = useParams(); // Получаем имя пользователя из URL
     const [user, setUser] = useState(null);
@@ -183,14 +183,14 @@ const UserProfilePage = () => {
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <button onClick={() => fetchCommits(repo.name)} className="small-button">
+                                                    <Link to={`/user/${user.github_username}/commits/${repo.name}`} className="btn">
                                                         Показать коммиты
-                                                    </button>
+                                                    </Link>
                                                 </td>
                                                 <td>
-                                                    <button onClick={() => fetchFiles(repo.name)} className="small-button">
+                                                    <Link to={`/user/${user.github_username}/files/${repo.name}`} className="btn">
                                                         Посмотреть файлы
-                                                    </button>
+                                                    </Link>
                                                 </td>
                                                 <td>
                                                     <button

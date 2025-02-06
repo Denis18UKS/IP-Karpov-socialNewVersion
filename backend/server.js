@@ -366,7 +366,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Пользователь с таким email уже существует!' });
         } else if (existingUserGitHub.length > 0) {
             return res.status(400).json({ message: 'Пользователь с таким GitHub Username уже существует!' });
-        } 
+        }
 
         // Хеширование пароля
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -629,35 +629,49 @@ app.get('/users/:username', async (req, res) => {
 });
 
 
-// Защищенный маршрут для получения списка пользователей
+// Получение всех пользователей
 app.get('/users', verifyToken, async (req, res) => {
     try {
-        const [users] = await db.query('SELECT id, username, email, github_username, avatar, skills FROM users');
-        res.status(200).json(users);
+        const [results] = await db.query("SELECT id, username, avatar FROM users");
+        res.status(200).json(results);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Ошибка сервера при получении пользователей' });
+        console.error('Ошибка при загрузке пользователей:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
 
-app.get('/chats', verifyToken, async (req, res) => {
-    const { id } = req.user;
+// Создание чата
+app.post('/chats', verifyToken, async (req, res) => {
+    const userId1 = req.user.id;
+    const userId2 = req.body.userId2;
+
+    if (!userId2) {
+        return res.status(400).json({ message: 'userId2 обязателен' });
+    }
+
     try {
-        const [chats] = await db.query(
-            `SELECT c.id, u1.username AS user1, u2.username AS user2, c.created_at
-            FROM chats c
-            JOIN users u1 ON c.user_id_1 = u1.id
-            JOIN users u2 ON c.user_id_2 = u2.id
-            WHERE c.user_id_1 = ? OR c.user_id_2 = ?`,
-            [id, id]
+        // Проверяем, существует ли уже чат между этими пользователями
+        const [existingChat] = await db.query(
+            'SELECT id FROM chats WHERE (user_id_1 =? AND user_id =?) OR (user_id_1 =? AND user_id_2 =?)',
+            [userId1, userId2, userId2, userId1]
         );
-        res.json(chats);
+
+        if (existingChat.length > 0) {
+            return res.json({ id: existingChat.id }); // Возвращаем ID существующего чата
+        }
+
+        // Создаем новый чат
+        const [result] = await db.query(
+            'INSERT INTO chats (user_id_1, user_id_2) VALUES (?,?)',
+            [userId1, userId2]
+        );
+
+        res.status(201).json({ id: result.insertId });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Ошибка при получении чатов' });
+        console.error('Ошибка при создании чата:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
-
 
 // Пример вызова notifyClients при новом сообщении
 app.post('/messages', verifyToken, async (req, res) => {
@@ -696,18 +710,34 @@ app.post('/messages', verifyToken, async (req, res) => {
 });
 
 
+// Получение сообщений из чата
 app.get('/messages/:chatId', verifyToken, async (req, res) => {
-    const { chatId } = req.params;
+    const chatId = req.params.chatId;
+    const userId = req.user.id;
+
     try {
+        // Проверяем, что пользователь участвует в этом чате
+        const [chats] = await db.query(
+            'SELECT id FROM chats WHERE (user_id_1 =? OR user_id_2 =?) AND id =?',
+            [userId, userId, chatId]
+        );
+        if (chats.length === 0) {
+            return res.status(403).json({ message: 'Доступ к чату запрещен' });
+        }
+
+        // Получаем сообщения из чата
         const [messages] = await db.query(
-            'SELECT m.*, u.username FROM messages m JOIN users u ON m.user_id = u.id WHERE m.chat_id = ? ORDER BY m.created_at',
+            'SELECT id, chat_id, user_id, message, created_at, username, read FROM messages WHERE chat_id =?',
             [chatId]
         );
-        console.log(messages); // Логирование сообщений
-        res.json(messages);
+
+        // Помечаем сообщения как прочитанные
+        await db.query('UPDATE messages SET read = 1 WHERE chat_id =? AND user_id!=?', [chatId, userId]);
+
+        res.status(200).json(messages);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Ошибка при получении сообщений' });
+        console.error('Ошибка при получении сообщений:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
 

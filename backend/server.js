@@ -43,6 +43,7 @@ app.use('/uploads/posts', express.static(path.join(__dirname, 'uploads', 'posts'
 
 app.use('/github', githubRoutes);
 
+
 // Логирование запросов
 app.use((err, req, res, next) => {
     console.log(`Request URL: ${req.url}`);  // Логируем путь запроса
@@ -103,6 +104,97 @@ const verifyAdmin = (req, res, next) => {
     }
     next();
 };
+
+
+// Маршрут для получения списка пользователей
+app.get("/users", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+
+        const [users] = await db.query(
+            "SELECT id, username, github_username, avatar, skills FROM users WHERE id != ?",
+            [userId]
+        );
+
+        // Получаем статус дружбы для каждого пользователя
+        const friendStatusQuery = `
+            SELECT friend_id, status 
+            FROM friends 
+            WHERE user_id = ? AND friend_id IN (?);
+        `;
+        const friendStatusResult = await db.query(friendStatusQuery, [
+            userId,
+            users.map(user => user.id),
+        ]);
+
+        // Обновляем список пользователей с соответствующим статусом дружбы
+        const usersWithStatus = users.map(user => {
+            const friendship = friendStatusResult.find(status => status.friend_id === user.id);
+            if (friendship) {
+                user.friendshipStatus = friendship.status;
+            } else {
+                user.friendshipStatus = "none"; // Если нет записи, то статус "none"
+            }
+            return user;
+        });
+
+        res.json(usersWithStatus);
+
+    } catch (error) {
+        console.error("Ошибка при получении пользователей:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+// Маршрут для добавления в друзья
+app.post("/add-friend", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+        const { friendId } = req.body;
+
+        if (!friendId) {
+            return res.status(400).json({ message: "Не указан ID друга" });
+        }
+
+        if (userId === friendId) {
+            return res.status(400).json({ message: "Нельзя добавить себя в друзья" });
+        }
+
+        // Проверяем, существует ли уже заявка
+        const [existingRequest] = await db.query(
+            "SELECT * FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
+            [userId, friendId, friendId, userId]
+        );
+
+        if (existingRequest.length > 0) {
+            return res.status(400).json({ message: "Заявка уже отправлена или уже в друзьях" });
+        }
+
+        // Добавляем новую заявку в друзья
+        await db.query(
+            "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)",
+            [userId, friendId, "pending"]
+        );
+
+        res.json({ message: "Заявка в друзья успешно отправлена" });
+
+    } catch (error) {
+        console.error("Ошибка при добавлении в друзья:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
 
 
 
@@ -366,7 +458,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Пользователь с таким email уже существует!' });
         } else if (existingUserGitHub.length > 0) {
             return res.status(400).json({ message: 'Пользователь с таким GitHub Username уже существует!' });
-        } 
+        }
 
         // Хеширование пароля
         const hashedPassword = await bcrypt.hash(password, 10);

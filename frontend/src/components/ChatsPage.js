@@ -76,21 +76,26 @@ const Chats = () => {
 
             if (notification.type === 'NEW_MESSAGE') {
                 const message = notification.data;
-                if (message.chat_id !== chatId) {
-                    toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
-                    setUnreadMessagesCount(prev => ({
-                        ...prev,
-                        [message.chat_id]: (prev[message.chat_id] || 0) + 1
-                    }));
-                } else {
-                    setMessages(prev => [...prev, message]);
-                    setShowScrollButton(true);
+
+                // Проверка на дублирование сообщения по ID
+                if (!messages.some(existingMessage => existingMessage.id === message.id)) {
+                    if (message.chat_id !== chatId) {
+                        toast(`Новое сообщение от ${message.username || 'Неизвестный'}`);
+                        setUnreadMessagesCount(prev => ({
+                            ...prev,
+                            [message.chat_id]: (prev[message.chat_id] || 0) + 1
+                        }));
+                    } else {
+                        setMessages(prev => [...prev, message]);
+                        setShowScrollButton(true);
+                    }
                 }
             }
         };
 
         return () => socket.close();
-    }, [chatId]);
+    }, [chatId, messages]);  // Добавление зависимости от сообщений
+
 
     const selectChat = (user) => {
         if (selectedUser?.id === user.id) return;

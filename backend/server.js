@@ -43,6 +43,7 @@ app.use('/uploads/posts', express.static(path.join(__dirname, 'uploads', 'posts'
 
 app.use('/github', githubRoutes);
 
+
 // Логирование запросов
 app.use((err, req, res, next) => {
     console.log(`Request URL: ${req.url}`);  // Логируем путь запроса
@@ -103,6 +104,179 @@ const verifyAdmin = (req, res, next) => {
     }
     next();
 };
+
+
+// Маршрут для получения списка пользователей
+app.get("/users", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+
+        const [users] = await db.query(
+            "SELECT id, username, github_username, avatar, skills FROM users WHERE id != ? ",
+            [userId]
+        );
+
+        // Получаем статус дружбы для каждого пользователя
+        const friendStatusQuery = `
+            SELECT friend_id, status 
+            FROM friends 
+            WHERE user_id = ? AND friend_id IN (?);
+        `;
+        const friendStatusResult = await db.query(friendStatusQuery, [
+            userId,
+            users.map(user => user.id),
+        ]);
+
+        // Обновляем список пользователей с соответствующим статусом дружбы
+        const usersWithStatus = users.map(user => {
+            const friendship = friendStatusResult.find(status => status.friend_id === user.id);
+            if (friendship) {
+                user.friendshipStatus = friendship.status;
+            } else {
+                user.friendshipStatus = "none"; // Если нет записи, то статус "none"
+            }
+            return user;
+        });
+
+        res.json(usersWithStatus);
+
+    } catch (error) {
+        console.error("Ошибка при получении пользователей:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+// Маршрут для получения списка друзей
+app.get("/friends", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+
+        // Получаем только друзей, у которых статус подтвержден ("accepted")
+        const [friends] = await db.query(
+            `SELECT u.id, u.username, u.avatar 
+            FROM users u 
+            JOIN friends f ON u.id = f.friend_id 
+            WHERE f.user_id = ? AND f.status = 'accepted'`,
+            [userId]
+        );
+
+        res.json(friends);
+    } catch (error) {
+        console.error("Ошибка при получении списка друзей:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+
+app.get('/friend-requests', async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+
+        // Получаем только заявки на добавление в друзья (статус "pending")
+        const [requests] = await db.query(
+            `SELECT 
+                f.user_id, f.friend_id, f.status,
+                u1.username AS user_name, u2.avatar AS avatar, u2.username AS friend_name
+            FROM friends f
+            JOIN users u1 ON f.user_id = u1.id
+            JOIN users u2 ON f.friend_id = u2.id
+            WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 'pending'`,
+            [userId, userId]
+        );
+
+        res.json(requests);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+
+// Маршрут для добавления в друзья
+app.patch("/friend-requests/accept/:friendId", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+        const friendId = req.params.friendId;
+
+        if (!friendId) {
+            return res.status(400).json({ message: "Не указан ID друга" });
+        }
+
+        // Обновляем статус на "accepted"
+        const [result] = await db.query(
+            "UPDATE friends SET status = 'accepted' WHERE user_id = ? AND friend_id = ? OR user_id = ? AND friend_id = ?",
+            [userId, friendId, friendId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Заявка не найдена" });
+        }
+
+        res.json({ message: "Заявка принята" });
+
+    } catch (error) {
+        console.error("Ошибка при принятии заявки:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+app.patch("/friend-requests/reject/:friendId", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+        const friendId = req.params.friendId;
+
+        if (!friendId) {
+            return res.status(400).json({ message: "Не указан ID друга" });
+        }
+
+        // Удаляем запись о заявке
+        const [result] = await db.query(
+            "DELETE FROM friends WHERE user_id = ? AND friend_id = ? OR user_id = ? AND friend_id = ?",
+            [userId, friendId, friendId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Заявка не найдена" });
+        }
+
+        res.json({ message: "Заявка отклонена" });
+
+    } catch (error) {
+        console.error("Ошибка при отклонении заявки:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
 
 
 
@@ -366,7 +540,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Пользователь с таким email уже существует!' });
         } else if (existingUserGitHub.length > 0) {
             return res.status(400).json({ message: 'Пользователь с таким GitHub Username уже существует!' });
-        } 
+        }
 
         // Хеширование пароля
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -466,7 +640,6 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Ошибка на сервере' });
     }
 });
-
 
 
 
@@ -630,7 +803,7 @@ app.get('/users/:username', async (req, res) => {
 
 
 // Защищенный маршрут для получения списка пользователей
-app.get('/users', verifyToken, async (req, res) => {
+app.get('/all-users', verifyToken, async (req, res) => {
     try {
         const [users] = await db.query('SELECT id, username, email, github_username, avatar, skills FROM users');
         res.status(200).json(users);

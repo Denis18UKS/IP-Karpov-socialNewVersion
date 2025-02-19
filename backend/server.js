@@ -118,7 +118,7 @@ app.get("/users", async (req, res) => {
         const userId = decoded.id;
 
         const [users] = await db.query(
-            "SELECT id, username, github_username, avatar, skills FROM users WHERE id != ?",
+            "SELECT id, username, github_username, avatar, skills FROM users WHERE id != ? ",
             [userId]
         );
 
@@ -152,8 +152,8 @@ app.get("/users", async (req, res) => {
     }
 });
 
-// Маршрут для добавления в друзья
-app.post("/add-friend", async (req, res) => {
+// Маршрут для получения списка друзей
+app.get("/friends", async (req, res) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
         return res.status(401).json({ message: "Необходима авторизация" });
@@ -162,39 +162,121 @@ app.post("/add-friend", async (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.id;
-        const { friendId } = req.body;
+
+        // Получаем только друзей, у которых статус подтвержден ("accepted")
+        const [friends] = await db.query(
+            `SELECT u.id, u.username, u.avatar 
+            FROM users u 
+            JOIN friends f ON u.id = f.friend_id 
+            WHERE f.user_id = ? AND f.status = 'accepted'`,
+            [userId]
+        );
+
+        res.json(friends);
+    } catch (error) {
+        console.error("Ошибка при получении списка друзей:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+
+app.get('/friend-requests', async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+
+        // Получаем только заявки на добавление в друзья (статус "pending")
+        const [requests] = await db.query(
+            `SELECT 
+                f.user_id, f.friend_id, f.status,
+                u1.username AS user_name, u2.avatar AS avatar, u2.username AS friend_name
+            FROM friends f
+            JOIN users u1 ON f.user_id = u1.id
+            JOIN users u2 ON f.friend_id = u2.id
+            WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 'pending'`,
+            [userId, userId]
+        );
+
+        res.json(requests);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+
+// Маршрут для добавления в друзья
+app.patch("/friend-requests/accept/:friendId", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+        const friendId = req.params.friendId;
 
         if (!friendId) {
             return res.status(400).json({ message: "Не указан ID друга" });
         }
 
-        if (userId === friendId) {
-            return res.status(400).json({ message: "Нельзя добавить себя в друзья" });
-        }
-
-        // Проверяем, существует ли уже заявка
-        const [existingRequest] = await db.query(
-            "SELECT * FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
+        // Обновляем статус на "accepted"
+        const [result] = await db.query(
+            "UPDATE friends SET status = 'accepted' WHERE user_id = ? AND friend_id = ? OR user_id = ? AND friend_id = ?",
             [userId, friendId, friendId, userId]
         );
 
-        if (existingRequest.length > 0) {
-            return res.status(400).json({ message: "Заявка уже отправлена или уже в друзьях" });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Заявка не найдена" });
         }
 
-        // Добавляем новую заявку в друзья
-        await db.query(
-            "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)",
-            [userId, friendId, "pending"]
-        );
-
-        res.json({ message: "Заявка в друзья успешно отправлена" });
+        res.json({ message: "Заявка принята" });
 
     } catch (error) {
-        console.error("Ошибка при добавлении в друзья:", error);
+        console.error("Ошибка при принятии заявки:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
+app.patch("/friend-requests/reject/:friendId", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+        const friendId = req.params.friendId;
+
+        if (!friendId) {
+            return res.status(400).json({ message: "Не указан ID друга" });
+        }
+
+        // Удаляем запись о заявке
+        const [result] = await db.query(
+            "DELETE FROM friends WHERE user_id = ? AND friend_id = ? OR user_id = ? AND friend_id = ?",
+            [userId, friendId, friendId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Заявка не найдена" });
+        }
+
+        res.json({ message: "Заявка отклонена" });
+
+    } catch (error) {
+        console.error("Ошибка при отклонении заявки:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
 
 
 
@@ -561,7 +643,6 @@ app.post('/login', async (req, res) => {
 
 
 
-
 // Маршрут для получения профиля текущего пользователя
 app.get('/profile', verifyToken, async (req, res) => {
     const { id } = req.user;
@@ -722,7 +803,7 @@ app.get('/users/:username', async (req, res) => {
 
 
 // Защищенный маршрут для получения списка пользователей
-app.get('/users', verifyToken, async (req, res) => {
+app.get('/all-users', verifyToken, async (req, res) => {
     try {
         const [users] = await db.query('SELECT id, username, email, github_username, avatar, skills FROM users');
         res.status(200).json(users);

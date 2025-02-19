@@ -152,6 +152,44 @@ app.get("/users", async (req, res) => {
     }
 });
 
+
+app.post("/add-friend", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Необходима авторизация" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+        const { friendId } = req.body;
+
+        if (!friendId) {
+            return res.status(400).json({ message: "Не указан ID друга" });
+        }
+
+        // Проверяем, нет ли уже заявки или дружбы
+        const [existing] = await db.query(
+            "SELECT * FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
+            [userId, friendId, friendId, userId]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({ message: "Заявка уже отправлена или дружба уже установлена" });
+        }
+
+        // Создаём заявку
+        await db.query("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'pending')", [userId, friendId]);
+
+        res.json({ message: "Заявка отправлена" });
+
+    } catch (error) {
+        console.error("Ошибка при отправке заявки в друзья:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+
 // Маршрут для получения списка друзей
 app.get("/friends", async (req, res) => {
     const token = req.headers.authorization?.split(" ")[1];
@@ -163,13 +201,14 @@ app.get("/friends", async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.id;
 
-        // Получаем только друзей, у которых статус подтвержден ("accepted")
+        // Получаем друзей в обе стороны (и тех, кого добавил userId, и тех, кто добавил userId)
         const [friends] = await db.query(
             `SELECT u.id, u.username, u.avatar 
             FROM users u 
-            JOIN friends f ON u.id = f.friend_id 
-            WHERE f.user_id = ? AND f.status = 'accepted'`,
-            [userId]
+            JOIN friends f ON (u.id = f.friend_id AND f.user_id = ?) 
+                OR (u.id = f.user_id AND f.friend_id = ?) 
+            WHERE f.status = 'accepted'`,
+            [userId, userId]
         );
 
         res.json(friends);
@@ -178,6 +217,7 @@ app.get("/friends", async (req, res) => {
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
 
 
 app.get('/friend-requests', async (req, res) => {

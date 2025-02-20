@@ -1262,7 +1262,6 @@ app.post("/forums/:id/answers", verifyToken, async (req, res) => {
 });
 
 // Обновление статуса вопроса
-// Обновление статуса вопроса
 app.put("/forums/:id/status", verifyToken, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;

@@ -238,9 +238,11 @@ app.get('/friend-requests', async (req, res) => {
             FROM friends f
             JOIN users u1 ON f.user_id = u1.id
             JOIN users u2 ON f.friend_id = u2.id
-            WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 'pending'`,
-            [userId, userId]
+            WHERE f.friend_id = ? AND f.status = 'pending'`,
+            [userId]
         );
+
+
 
         res.json(requests);
     } catch (error) {

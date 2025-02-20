@@ -40,7 +40,7 @@ const HackathonsPage = () => {
 
     return (
         <div>
-            <h1>Список хакатонов</h1>
+            <h1>Актуальные Хакатоны</h1>
             {/* Подключаем стили */}
             {cssLinks.map((link, index) => (
                 <link key={index} rel="stylesheet" href={link} />

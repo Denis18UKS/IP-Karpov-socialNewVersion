@@ -1178,28 +1178,21 @@ app.post('/forums', verifyToken, async (req, res) => {
     }
 
     try {
-        // Вставка нового вопроса в базу данных
         const [result] = await db.query(
-            'INSERT INTO forums (question, description, user_id, created_at, isAuthorQuestion, status) VALUES (?, ?, ?, NOW(), ?, ?)',
-            [title, description, user_id, user_id, 'Открыт']
+            'INSERT INTO forums (question, description, user_id, created_at, status) VALUES (?, ?, ?, NOW(), ?)',
+            [title, description, user_id, 'Открыт']
         );
 
-        // Получение информации о пользователе
         const [user] = await db.query('SELECT username FROM users WHERE id = ?', [user_id]);
 
-        // Получение списка вопросов, где user_id совпадает с isAuthorQuestion
-        const [authorQuestions] = await db.query('SELECT user_id, isAuthorQuestion FROM forums WHERE user_id = isAuthorQuestion');
-
-        // Формируем ответ, включающий информацию о новом вопросе и авторских вопросах
         res.status(201).json({
             id: result.insertId,
             title,
             description,
-            user: user[0].username,
+            user: user[0].username,  // Возвращаем имя пользователя
             created_at: new Date(),
             status: 'Открыт',
             user_id,
-            authorQuestions // Включаем полученные вопросы авторов
         });
     } catch (error) {
         console.error('Ошибка при добавлении вопроса:', error);
@@ -1307,7 +1300,7 @@ app.put("/forums/:id/status", verifyToken, async (req, res) => {
 
         // Получаем обновленные данные вопроса
         const [updatedQuestion] = await db.query(
-            'SELECT id, question, description, status, user_id FROM forums WHERE id = ?',
+            'SELECT id, title, description, status, user_id FROM forums WHERE id = ?',
             [id]
         );
 
